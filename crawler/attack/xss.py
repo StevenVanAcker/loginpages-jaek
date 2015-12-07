@@ -71,7 +71,7 @@ class XSSAttacker(InteractionCore):
 
         if verbose:
             self._analyzing_finished = True
-            f = open("attackresult/" + str(self.attack_counter), "w")
+            f = open("attackresult/" + str(self.attack_counter), "w", encoding="utf-8")
             f.write("Url: " + url + " \n")
             f.write("================================================== \n")
             f.write(response_html)

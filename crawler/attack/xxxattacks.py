@@ -29,7 +29,7 @@ class XSSVectors():
 
     def __init__(self):
         self.attack_vectors = []
-        for line in open(os.path.dirname(os.path.realpath(__file__)) + FILENAME, "r"):
+        for line in open(os.path.dirname(os.path.realpath(__file__)) + FILENAME, encoding="utf-8"):
             self.attack_vectors.append(line[:-1])
 
     def random_string_generator(self, size=6, chars=string.ascii_uppercase + string.digits+string.ascii_lowercase):

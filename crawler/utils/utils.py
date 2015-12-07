@@ -141,7 +141,7 @@ def calculate_similarity_between_pages(page1, page2, clickable_weight = 1.0, for
     else:
         result = 1
     if verbose:
-        f = open("similarities/" + str(page1.id) + " - " + str(page2.id) + ".txt", "w")
+        f = open("similarities/" + str(page1.id) + " - " + str(page2.id) + ".txt", "w", encoding="utf-8")
         f.write(page1.toString())
         f.write(" \n \n ======================================================= \n \n")
         f.write(page2.toString())
@@ -275,6 +275,6 @@ def _handle_string(value):
         return ParameterType.String
 
 def print_to_file(self, item, filename):
-    f = open("result/"+filename, "w")
+    f = open("result/"+filename, "w", encoding="utf-8")
     f.write(item)
     f.close()

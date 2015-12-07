@@ -793,7 +793,7 @@ class Crawler(JaekCore):
         return form
 
     def print_to_file(self, item, filename):
-        f = open("result/"+ str(filename), "w")
+        f = open("result/"+ str(filename), "w", encoding="utf-8")
         f.write(item)
         f.close()
 
@@ -857,7 +857,7 @@ class Crawler(JaekCore):
     #    logging.debug("Number of cookies before initial login: {}".format(num_of_cookies_before_login))
     #    self._login_form, login_clickables = self.find_form_with_special_parameters(self._page_with_loginform_logged_out, self.user.login_data)
     #    if self._login_form is None:
-    #        #f = open("No_login_form.txt", "w")
+    #        #f = open("No_login_form.txt", "w", encoding="utf-8")
     #        #f.write(self._page_with_loginform_logged_out.html)
     #        #f.close()
     #        raise LoginFailed("Cannot find Login form, please check the parameters...")

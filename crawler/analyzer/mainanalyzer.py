@@ -93,7 +93,7 @@ class MainAnalyzer(InteractionCore):
             self._wait((0.5 - overall_waiting_time))
 
         # Just for debugging
-        #f = open("text.txt", "w")
+        #f = open("text.txt", "w", encoding="utf-8")
         #f.write(self.mainFrame().toHtml())
         #f.close()
         base_url = self.mainFrame().findFirstElement("base")
