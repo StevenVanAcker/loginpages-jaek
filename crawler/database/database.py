@@ -16,7 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 import logging
-from pymongo.connection import Connection
 import pymongo
 from models.asyncrequeststructure import AsyncRequestStructure
 from models.timingrequest import TimingRequest
@@ -46,7 +45,7 @@ DOM_ADDRESS = "dom_address"
 class Database():
     
     def __init__(self, db_name, drop_dbs=True):
-        self.connection=Connection()
+        self.connection=pymongo.MongoClient()
         self.database = self.connection[db_name]
         self.pages = self.database.pages
         #self.pages.ensure_index( "id", pymongo.ASCENDING, unique=True)
