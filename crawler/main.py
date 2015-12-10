@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 
-import logging
+import logging, sys
 
 from attacker import Attacker
 from crawler import Crawler
@@ -53,9 +53,9 @@ if __name__ == '__main__':
     # Crawl without user session. Parameter desc: Name of DB - Privilege level - session
     user = User("Test", 0, session="ABC")
 
-    url = "http://localhost/"
+    url = sys.argv[1]
     # Creates the crawler config: URL: start url of the crawler(independent from login) - max_dept: how deep to crawl(link), max_click_depth: how deep to follow events - Crawlspeed: Fast is the best value here
-    crawler_config = CrawlConfig("Some Name, doesn't matter", url, max_depth=1, max_click_depth=2, crawl_speed=CrawlSpeed.Fast)
+    crawler_config = CrawlConfig("Some Name, doesn't matter", url, max_depth=5, max_click_depth=5, crawl_speed=CrawlSpeed.Fast)
 
     # From here you have nothing to chance. Except you want no attacking, then comment out the lines down
     logging.info("Crawler started...")
