@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5.Qt import QWebPage, QWebSettings
 from PyQt5.QtNetwork import QNetworkProxy, QNetworkRequest
 from PyQt5.QtCore import QSize, QUrl, QByteArray
+from PyQt5.QtGui import QImage, QPainter
 
 from time import time, sleep
 from core.jsbridge import JsBridge
@@ -82,10 +83,10 @@ class InteractionCore(QWebPage):
         f.close()
 
         enablePlugins = True
-        loadImages = False
+        loadImages = True
         self.settings().setAttribute(QWebSettings.PluginsEnabled, enablePlugins)
         self.settings().setAttribute(QWebSettings.JavaEnabled, enablePlugins)
-        #self.settings().setAttribute(QWebSettings.AutoLoadImages, loadImages)
+        self.settings().setAttribute(QWebSettings.AutoLoadImages, loadImages)
         self.settings().setAttribute(QWebSettings.DeveloperExtrasEnabled, True)
         self.settings().setAttribute(QWebSettings.JavascriptEnabled, True)
         self.settings().setAttribute(QWebSettings.JavascriptCanOpenWindows, True)
@@ -101,6 +102,8 @@ class InteractionCore(QWebPage):
 
         #Have to connect it here, otherwise I could connect it to the old one and then replaces it
         self.networkAccessManager().finished.connect(self.loadComplete)
+
+        self.screenshotCounter = 0
 
     def analyze(self, html, requested_url, timeout = 20):
         raise NotImplemented()
@@ -260,3 +263,20 @@ class InteractionCore(QWebPage):
                 post_params.append(key + "=" + value + "&")
         post_params.remove(post_params.length() - 1, 1)
         return post_params
+
+    def screenshot(self, filenameFormat):
+        filename = filenameFormat.format(self.screenshotCounter)
+        self.screenshotCounter += 1
+        frame = self.mainFrame()
+        
+        #logging.debug("Taking screenshot {} for HTML {}".format(filename, frame.toHtml()))
+        logging.debug("Taking screenshot {}".format(filename))
+
+        image = QImage(self.viewportSize(), QImage.Format_ARGB32)
+
+        painter = QPainter(image)
+        frame.render(painter)
+        painter.end()
+
+        image.save(filename)
+        return filename
