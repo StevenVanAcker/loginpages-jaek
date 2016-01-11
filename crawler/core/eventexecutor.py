@@ -52,9 +52,9 @@ class EventExecutor(InteractionCore):
         self.mainFrame().urlChanged.connect(self._url_changes)
         self.afterClicksHandler = afterClicksHandler
 
-    def triggerAfterClicksHandler(self):
+    def triggerAfterClicksHandler(self, data):
         if self.afterClicksHandler:
-            self.afterClicksHandler.handle(self)
+            self.afterClicksHandler.handle(data)
 
     def execute(self, webpage, timeout=5, element_to_click=None, xhr_options=XHRBehavior.ObserveXHR, pre_clicks=[]):
         logging.debug(
@@ -75,6 +75,15 @@ class EventExecutor(InteractionCore):
         target_tag = target_tag[-1]
         if target_tag in ['video']:
             return EventResult.UnsupportedTag, None
+
+        cbData = {
+            "element_to_click": element_to_click,
+            "pre_clicks": pre_clicks,
+            "webpage": webpage,
+            "xhr_options": xhr_options,
+            "timeout": timeout,
+            "self": self,
+        }
 
         t = 0.0
         while (not self._loading_complete and t < timeout ):  # Waiting for finish processing
@@ -141,7 +150,7 @@ class EventExecutor(InteractionCore):
 
         if real_clickable is None:
             logging.debug("Target Clickable not found")
-            self.triggerAfterClicksHandler()
+            self.triggerAfterClicksHandler(cbData)
             return EventResult.TargetElementNotFound, None
 
         self._capturing_ajax = True
@@ -166,7 +175,7 @@ class EventExecutor(InteractionCore):
             delta_page = DeltaPage(-1, self._new_url.toString(), html=None, generator=generator, parent_id=webpage.id,
                                    cookiesjar=webpage.cookiejar)
             self._analyzing_finished = True
-            self.triggerAfterClicksHandler()
+            self.triggerAfterClicksHandler(cbData)
             self.mainFrame().setHtml(None)
             return EventResult.URLChanged, delta_page
         elif self.popup is not None:
@@ -175,7 +184,7 @@ class EventExecutor(InteractionCore):
             delta_page = DeltaPage(-1, popup_url, html=None, generator=generator, parent_id=webpage.id)
             self.popup = None
             self._analyzing_finished = True
-            self.triggerAfterClicksHandler()
+            self.triggerAfterClicksHandler(cbData)
             self.mainFrame().setHtml(None)
             return EventResult.CreatesPopup, delta_page
         else:
@@ -193,7 +202,7 @@ class EventExecutor(InteractionCore):
             delta_page.forms = forms
             delta_page.ajax_requests = self.ajax_requests
             self._analyzing_finished = True
-            self.triggerAfterClicksHandler()
+            self.triggerAfterClicksHandler(cbData)
             self.mainFrame().setHtml(None)
             return EventResult.Ok, delta_page
 
