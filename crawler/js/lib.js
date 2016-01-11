@@ -361,3 +361,8 @@ function bodyAddEventListenerWrapper(elem, args) {
 
 }
 
+function jaek_isVisible(el){
+    var rect = el.getBoundingClientRect();
+    return (rect.height + rect.width) != 0;
+};
+

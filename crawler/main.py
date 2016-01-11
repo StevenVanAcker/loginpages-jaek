@@ -45,8 +45,27 @@ class ScreenshotTaker(object):
         if otherevents:
             allevents.extend([x.toString() for x in otherevents])
 
+        logging.info("")
+        logging.info("")
+        logging.info("")
+        logging.info("")
+        logging.info("")
+
+        passwordfields = data["self"].mainFrame().findAllElements('input[type="password"]')
+
+        xps = [p.evaluateJavaScript("getXPath(this)") for p in passwordfields]
+        viss = [p.evaluateJavaScript("jaek_isVisible(this)") for p in passwordfields]
+
+        for i in range(len(xps)):
+            xp = xps[i]
+            vis = viss[i]
+            logging.debug("    ({}) password field {}: {}".format(vis, xp, passwordfields[i].toOuterXml()))
+
         logging.info("Taking screenshot of {} with events: {}".format(data["webpage"].url, allevents))
-        data["self"].screenshot("helloworld{}.png")
+        if any(viss):
+            data["self"].screenshot("yespw{}.png")
+        else:
+            data["self"].screenshot("nopw{}.png")
 
 if __name__ == '__main__':
     vdisplay = Xvfb()
