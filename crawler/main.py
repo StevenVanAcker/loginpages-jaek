@@ -69,9 +69,9 @@ if __name__ == '__main__':
     logging.info("Crawler finished")
 
     # If you want no attacking comment out the lines below.
-    logging.info("Start attacking...")
-    attack_config = AttackConfig(url)
-    attacker = Attacker(attack_config, database_manager=database_manager)#, proxy="localhost", port=8082)
-    attacker.attack(user)
-    logging.info("Finish attacking...")
+###     logging.info("Start attacking...")
+###     attack_config = AttackConfig(url)
+###     attacker = Attacker(attack_config, database_manager=database_manager)#, proxy="localhost", port=8082)
+###     attacker.attack(user)
+###     logging.info("Finish attacking...")
     vdisplay.stop()
