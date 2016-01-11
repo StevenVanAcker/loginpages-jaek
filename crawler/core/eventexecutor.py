@@ -36,7 +36,7 @@ from models.utils import CrawlSpeed, purge_dublicates
 
 class EventExecutor(InteractionCore):
 
-    def __init__(self, parent, proxy="", port=0, crawl_speed=CrawlSpeed.Medium, network_access_manager=None):
+    def __init__(self, parent, proxy="", port=0, crawl_speed=CrawlSpeed.Medium, network_access_manager=None, afterClicksHandler=None):
         super(EventExecutor, self).__init__(parent, proxy, port, crawl_speed, network_access_manager)
         self._url_changed = False  # Inidicates if a event changes a location => treat it as link!
         self._new_url = None
@@ -50,10 +50,15 @@ class EventExecutor(InteractionCore):
         self.seen_timeouts = {}
         self.popup = None # reference if a popup occurs...
         self.mainFrame().urlChanged.connect(self._url_changes)
+        self.afterClicksHandler = afterClicksHandler
+
+    def triggerAfterClicksHandler(self):
+        if self.afterClicksHandler:
+            self.afterClicksHandler.handle(self)
 
     def execute(self, webpage, timeout=5, element_to_click=None, xhr_options=XHRBehavior.ObserveXHR, pre_clicks=[]):
         logging.debug(
-            "EventExecutor test started on {}...".format(webpage.url) + " with " + element_to_click.toString())
+            "EventExecutor test started on {}... with {} and preclicks {}".format(webpage.url, "None" if element_to_click==None else element_to_click.toString(), [x.toString() for x in pre_clicks]))
         self._analyzing_finished = False
         self._loading_complete = False
         self.xhr_options = xhr_options
@@ -66,7 +71,7 @@ class EventExecutor(InteractionCore):
         self.element_to_click = element_to_click
         self.popup = None
         self.mainFrame().setHtml(webpage.html, QUrl(webpage.url))
-        target_tag = element_to_click.dom_address.split("/")
+        target_tag = element_to_click.dom_address.split("/") if element_to_click!=None else "xyz"
         target_tag = target_tag[-1]
         if target_tag in ['video']:
             return EventResult.UnsupportedTag, None
@@ -105,35 +110,38 @@ class EventExecutor(InteractionCore):
             self._wait(self.wait_for_event)
 
         is_key_event = False
-            # Now execute the target event
-        if "javascript:" not in element_to_click.event:
-            self._url_changed = False
-            js_code = element_to_click.event
-            if js_code[0:2] == "on":
-                js_code = js_code[2:]  # if event begins with on, escape it
-
-            if js_code in self.key_events:
-                is_key_event = True
-                random_char = random.choice(string.ascii_letters)
-                js_code = "Simulate." + js_code + "(this, '" + random_char + "');"
-            else:
-                js_code = "Simulate." + js_code + "(this);"
-        else:
-            js_code = element_to_click.event[len("javascript:"):]
-
-        self.mainFrame().evaluateJavaScript(
-            self._addEventListener)  # This time it is here, because I dont want to have the initial addings
-
         real_clickable = None
-        if element_to_click.id != None and element_to_click.id != "":
-            real_clickable = self.search_element_with_id(element_to_click.id)
-        if element_to_click.html_class != None and real_clickable == None:
-            real_clickable = self.search_element_with_class(element_to_click.html_class, element_to_click.dom_address)
-        if real_clickable == None:
-            real_clickable = self.search_element_without_id_and_class(element_to_click.dom_address)
+            # Now execute the target event
+        if element_to_click!=None:
+                if "javascript:" not in element_to_click.event:
+                    self._url_changed = False
+                    js_code = element_to_click.event
+                    if js_code[0:2] == "on":
+                        js_code = js_code[2:]  # if event begins with on, escape it
+
+                    if js_code in self.key_events:
+                        is_key_event = True
+                        random_char = random.choice(string.ascii_letters)
+                        js_code = "Simulate." + js_code + "(this, '" + random_char + "');"
+                    else:
+                        js_code = "Simulate." + js_code + "(this);"
+                else:
+                    js_code = element_to_click.event[len("javascript:"):]
+
+                self.mainFrame().evaluateJavaScript(
+                    self._addEventListener)  # This time it is here, because I dont want to have the initial addings
+
+                real_clickable = None
+                if element_to_click.id != None and element_to_click.id != "":
+                    real_clickable = self.search_element_with_id(element_to_click.id)
+                if element_to_click.html_class != None and real_clickable == None:
+                    real_clickable = self.search_element_with_class(element_to_click.html_class, element_to_click.dom_address)
+                if real_clickable == None:
+                    real_clickable = self.search_element_without_id_and_class(element_to_click.dom_address)
 
         if real_clickable is None:
             logging.debug("Target Clickable not found")
+            self.triggerAfterClicksHandler()
             return EventResult.TargetElementNotFound, None
 
         self._capturing_ajax = True
@@ -158,6 +166,7 @@ class EventExecutor(InteractionCore):
             delta_page = DeltaPage(-1, self._new_url.toString(), html=None, generator=generator, parent_id=webpage.id,
                                    cookiesjar=webpage.cookiejar)
             self._analyzing_finished = True
+            self.triggerAfterClicksHandler()
             self.mainFrame().setHtml(None)
             return EventResult.URLChanged, delta_page
         elif self.popup is not None:
@@ -166,6 +175,7 @@ class EventExecutor(InteractionCore):
             delta_page = DeltaPage(-1, popup_url, html=None, generator=generator, parent_id=webpage.id)
             self.popup = None
             self._analyzing_finished = True
+            self.triggerAfterClicksHandler()
             self.mainFrame().setHtml(None)
             return EventResult.CreatesPopup, delta_page
         else:
@@ -183,6 +193,7 @@ class EventExecutor(InteractionCore):
             delta_page.forms = forms
             delta_page.ajax_requests = self.ajax_requests
             self._analyzing_finished = True
+            self.triggerAfterClicksHandler()
             self.mainFrame().setHtml(None)
             return EventResult.Ok, delta_page
 

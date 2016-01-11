@@ -44,14 +44,14 @@ def subtract_parent_from_delta_page(parent_page, delta_page):
     result = DeltaPage(delta_page.id, delta_page.url, delta_page.html, cookiesjar=delta_page.cookiejar, depth=delta_page.current_depth, generator=delta_page.generator, parent_id=delta_page.parent_id)
     result.delta_depth = delta_page.delta_depth
     for link in delta_page.links:
-        if link not in parent_page.links:
-            result.links.append(link)
+        #if link not in parent_page.links:
+        result.links.append(link)
         
     for d_clickable in delta_page.clickables:
         clickable_is_already_in_main = False
         for m_clickable in parent_page.clickables:
             if d_clickable == m_clickable:
-                clickable_is_already_in_main = True
+                #clickable_is_already_in_main = True
                 break
         if clickable_is_already_in_main == False:
                 result.clickables.append(d_clickable)

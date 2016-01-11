@@ -35,6 +35,10 @@ logging.basicConfig(level=logging.DEBUG,
                     #filemode='w'
                     )
 
+class ScreenshotTaker(object):
+    def handle(self, page):
+        page.screenshot("helloworld{}.png")
+
 if __name__ == '__main__':
     vdisplay = Xvfb()
     vdisplay.start()
@@ -60,7 +64,7 @@ if __name__ == '__main__':
     # From here you have nothing to chance. Except you want no attacking, then comment out the lines down
     logging.info("Crawler started...")
     database_manager = DatabaseManager(user, dropping=True)
-    crawler = Crawler(crawl_config=crawler_config, database_manager=database_manager)#, proxy="localhost", port=8082)
+    crawler = Crawler(crawl_config=crawler_config, database_manager=database_manager, afterClicksHandler=ScreenshotTaker())#, proxy="localhost", port=8082)
     crawler.crawl(user)
     logging.info("Crawler finished")
 

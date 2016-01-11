@@ -46,14 +46,14 @@ potential_logout_urls = []
 
 
 class Crawler(JaekCore):
-    def __init__(self, crawl_config, proxy="", port=0, database_manager=None):
+    def __init__(self, crawl_config, proxy="", port=0, database_manager=None, afterClicksHandler=None):
         QObject.__init__(self)
         self.app = QApplication(sys.argv)
         self._network_access_manager = QNetworkAccessManager(self)
         #self._network_access_manager = self._dynamic_analyzer.networkAccessManager()
 
         self._event_executor = EventExecutor(self, proxy, port, crawl_speed=crawl_config.process_speed,
-                                             network_access_manager=self._network_access_manager)
+                                             network_access_manager=self._network_access_manager, afterClicksHandler=afterClicksHandler)
         self._dynamic_analyzer = MainAnalyzer(self, proxy, port, crawl_speed=crawl_config.process_speed,
                                           network_access_manager=self._network_access_manager)
         self._form_handler = FormHandler(self, proxy, port, crawl_speed=crawl_config.process_speed,
@@ -277,6 +277,7 @@ class Crawler(JaekCore):
                 logging.debug("Start executing events...")
             else:
                 logging.debug("Page has no events. Cluster it and throw it to the others...")
+                self._event_executor.execute(current_page) # process the page anyway, but don't click anything
 
             while current_working_clickable_number < len(current_page.clickables): # and login_retries_per_clickable < max_login_retires_per_clickable:
                 current_clickable_to_work_on = current_page.clickables[current_working_clickable_number]
