@@ -52,8 +52,10 @@ class Crawler(JaekCore):
         self._network_access_manager = QNetworkAccessManager(self)
         #self._network_access_manager = self._dynamic_analyzer.networkAccessManager()
 
+        self._afterClicksHandler=afterClicksHandler
+
         self._event_executor = EventExecutor(self, proxy, port, crawl_speed=crawl_config.process_speed,
-                                             network_access_manager=self._network_access_manager, afterClicksHandler=afterClicksHandler)
+                                             network_access_manager=self._network_access_manager, afterClicksHandler=self._afterClicksHandler)
         self._dynamic_analyzer = MainAnalyzer(self, proxy, port, crawl_speed=crawl_config.process_speed,
                                           network_access_manager=self._network_access_manager)
         self._form_handler = FormHandler(self, proxy, port, crawl_speed=crawl_config.process_speed,
@@ -114,7 +116,7 @@ class Crawler(JaekCore):
                 self._event_executor = None
                 self._network_access_manager = QNetworkAccessManager(self)
                 self._event_executor = EventExecutor(self, self.proxy, self.port, crawl_speed=self.crawl_config.process_speed,
-                                             network_access_manager=self._network_access_manager)
+                                             network_access_manager=self._network_access_manager, afterClicksHandler=self._afterClicksHandler)
                 self._dynamic_analyzer = MainAnalyzer(self, self.proxy, self.port, crawl_speed=self.crawl_config.process_speed,
                                           network_access_manager=self._network_access_manager)
                 self._form_handler = FormHandler(self, self.proxy, self.port, crawl_speed=self.crawl_config.process_speed,
