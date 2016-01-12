@@ -151,7 +151,7 @@ class ClusterManager():
         :param url_hash:
         :return: if we have seen enough of an url or not
         """
-        return self.calculate_cluster_per_visited_urls(url_hash) > CLUSTER_THRESHOLD
+        return True #self.calculate_cluster_per_visited_urls(url_hash) > CLUSTER_THRESHOLD
 
 
 
