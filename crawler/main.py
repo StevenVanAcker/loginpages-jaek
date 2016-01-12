@@ -36,6 +36,9 @@ logging.basicConfig(level=logging.DEBUG,
                     )
 
 class ScreenshotTaker(object):
+    def __init__(self):
+        self.counter = 0
+
     def handle(self, data):
         initevent = data["element_to_click"]
         otherevents = data["pre_clicks"]
@@ -63,9 +66,10 @@ class ScreenshotTaker(object):
 
         logging.info("Taking screenshot of {} with events: {}".format(data["webpage"].url, allevents))
         if any(viss):
-            data["self"].screenshot("yespw{}.png")
+            data["self"].screenshot("yespw{}.png".format(self.counter))
         else:
-            data["self"].screenshot("nopw{}.png")
+            data["self"].screenshot("nopw{}.png".format(self.counter))
+        self.counter += 1
 
 if __name__ == '__main__':
     vdisplay = Xvfb()

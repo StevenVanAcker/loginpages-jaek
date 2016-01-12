@@ -103,8 +103,6 @@ class InteractionCore(QWebPage):
         #Have to connect it here, otherwise I could connect it to the old one and then replaces it
         self.networkAccessManager().finished.connect(self.loadComplete)
 
-        self.screenshotCounter = 0
-
     def analyze(self, html, requested_url, timeout = 20):
         raise NotImplemented()
     
@@ -264,9 +262,7 @@ class InteractionCore(QWebPage):
         post_params.remove(post_params.length() - 1, 1)
         return post_params
 
-    def screenshot(self, filenameFormat):
-        filename = filenameFormat.format(self.screenshotCounter)
-        self.screenshotCounter += 1
+    def screenshot(self, filename):
         frame = self.mainFrame()
         
         #logging.debug("Taking screenshot {} for HTML {}".format(filename, frame.toHtml()))
