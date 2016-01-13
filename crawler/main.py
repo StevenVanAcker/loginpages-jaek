@@ -27,6 +27,7 @@ from utils.user import User
 import csv
 from utils.utils import calculate_similarity_between_pages
 from xvfbwrapper import Xvfb
+from afterclickshandlers import LoginPageLogger
 
 # Here you can specify the logging. Now it logs to the console. If you uncomment the two lines below, then it logs in the file.
 logging.basicConfig(level=logging.DEBUG,
@@ -34,42 +35,6 @@ logging.basicConfig(level=logging.DEBUG,
                     #filename='Attack.log',
                     #filemode='w'
                     )
-
-class ScreenshotTaker(object):
-    def __init__(self):
-        self.counter = 0
-
-    def handle(self, data):
-        initevent = data["element_to_click"]
-        otherevents = data["pre_clicks"]
-        allevents = []
-        if initevent:
-            allevents.append(initevent.toString())
-        if otherevents:
-            allevents.extend([x.toString() for x in otherevents])
-
-        logging.info("")
-        logging.info("")
-        logging.info("")
-        logging.info("")
-        logging.info("")
-
-        passwordfields = data["self"].mainFrame().findAllElements('input[type="password"]')
-
-        xps = [p.evaluateJavaScript("getXPath(this)") for p in passwordfields]
-        viss = [p.evaluateJavaScript("jaek_isVisible(this)") for p in passwordfields]
-
-        for i in range(len(xps)):
-            xp = xps[i]
-            vis = viss[i]
-            logging.debug("    ({}) password field {}: {}".format(vis, xp, passwordfields[i].toOuterXml()))
-
-        logging.info("Taking screenshot of {} with events: {}".format(data["webpage"].url, allevents))
-        if any(viss):
-            data["self"].screenshot("yespw{}.png".format(self.counter))
-        else:
-            data["self"].screenshot("nopw{}.png".format(self.counter))
-        self.counter += 1
 
 if __name__ == '__main__':
     vdisplay = Xvfb()
@@ -97,7 +62,7 @@ if __name__ == '__main__':
     # From here you have nothing to chance. Except you want no attacking, then comment out the lines down
     logging.info("Crawler started...")
     database_manager = DatabaseManager(user, dropping=True)
-    crawler = Crawler(crawl_config=crawler_config, database_manager=database_manager, afterClicksHandler=ScreenshotTaker())#, proxy="localhost", port=8082)
+    crawler = Crawler(crawl_config=crawler_config, database_manager=database_manager, afterClicksHandler=LoginPageLogger())#, proxy="localhost", port=8082)
     crawler.crawl(user)
     logging.info("Crawler finished")
 
