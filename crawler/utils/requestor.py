@@ -59,7 +59,7 @@ class Requestor(InteractionCore):
             # did not download in time
             if num_retries > 0:
                 logging.debug('Timeout - retrying')
-                parsed_html = self.get(qurl, num_retries=num_retries-1, timerout=timeout, delay=delay)
+                parsed_html = self.get(qurl, num_retries=num_retries-1, timeout=timeout, delay=delay)
             else:
                 logging.debug('Timed out')
                 parsed_html = ''
