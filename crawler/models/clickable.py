@@ -97,3 +97,22 @@ class Clickable():
             return True
         else: 
             return False
+
+    def toDict(self):
+        out = {}
+        fields = ["event", "tag", "dom_address", "id", "html_class", "links_to", "clicked ", "clickable_type", "clickable_depth", "function_id"]
+        for f in fields:
+            out[f] = getattr(self, f, None)
+        out["clickable_type"] = self.clickable_type.name if self.clickable_type != None else None
+        return out
+ 
+    @staticmethod
+    def fromDict(d):
+        fields = ["event", "tag", "dom_address", "id", "html_class", "links_to", "clicked ", "clickable_type", "clickable_depth", "function_id"]
+        out = Clickable(None,None,None)
+        for f in fields:
+            if f in d:
+                setattr(out, f, d[f])
+        out.clickable_type = ClickableType[d["clickable_type"]] if d["clickable_type"] != None else None
+        return out
+
