@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 import logging, sys, json
+#from asyncio.tasks import sleep
+from time import sleep
 
 from models.clickable import Clickable
 
@@ -64,6 +66,8 @@ class ScreenshotTaker(BaseAfterClicksHandler): #{{{
         self.counter = 0
 
     def handle(self, data):
+        logging.info("Sleeping 5 seconds...")
+        sleep(5)
         logging.info("Taking screenshot of {}".format(data["webpage"].url))
         data["self"].screenshot("replay{}.png".format(self.counter))
         self.counter += 1
