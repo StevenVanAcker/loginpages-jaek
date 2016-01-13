@@ -12,8 +12,8 @@ class BaseAfterClicksHandler(object): #{{{
     def saveData(fn, url, initclick, preclicks):
         outdata = {}
         outdata["url"] = url
-        outdata["element_to_click"] = initclick.toDict()
-        outdata["pre_clicks"] = [x.toDict() for x in preclicks]
+        outdata["element_to_click"] = initclick.toDict() if initclick != None else None
+        outdata["pre_clicks"] = [x.toDict() if x != None else None for x in preclicks]
 
         json.dump(outdata, open(fn, "w"))
 
@@ -21,8 +21,8 @@ class BaseAfterClicksHandler(object): #{{{
     def loadData(fn):
         indata = json.load(open(fn))
         url = indata["url"]
-        initclick = Clickable.fromDict(indata["element_to_click"])
-        preclicks = [Clickable(None,None,None).fromDict(x) for x in indata["pre_clicks"]]
+        initclick = Clickable.fromDict(indata["element_to_click"]) if indata["element_to_click"] != None else None
+        preclicks = [Clickable(None,None,None).fromDict(x) if x != None else None for x in indata["pre_clicks"]]
         return url, initclick, preclicks
 #}}}
 
