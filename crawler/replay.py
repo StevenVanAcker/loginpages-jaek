@@ -46,8 +46,8 @@ if __name__ == "__main__":
     url, initclick, preclicks = sst.loadData(sys.argv[1]) # This is ugly, unserializing data should not happen in afterClicksHandlers
 
     logging.info("URL = {}".format(url))
-    logging.info("initclick = {}".format(initclick.toString()))
-    logging.info("preclicks = {}".format([x.toString() for x in preclicks]))
+    logging.info("initclick = {}".format(initclick.toString() if initclick != None else "<None>"))
+    logging.info("preclicks = {}".format([x.toString() if x != None else "<None>" for x in preclicks]))
 
     rep = Replayer(afterClicksHandler=sst)
     rep.replay(url, initclick, preclicks)
