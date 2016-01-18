@@ -89,6 +89,7 @@ class DomainHandler():
             self.database_manager.insert_url_structure_into_db(url_structure)
         else:
             for key in url.parameters:
+                current_parameter_type = None
                 try:
                     current_parameter_type = ParameterType(url_structure.parameters[key]["parameter_type"])
                 except KeyError:
@@ -96,6 +97,8 @@ class DomainHandler():
                 for value in url.parameters[key]: #This is for the case that a url has the same parameters multiple times
                     if value is not None:
                         current_parameter_type = self.calculate_new_url_type(current_parameter_type, value)
+                        if key not in url_structure.parameters:
+                            url_structure.parameters[key] = {}
                         url_structure.parameters[key]["parameter_type"] = current_parameter_type.value
             self.database_manager.insert_url_structure_into_db(url_structure)
         return url_structure
@@ -244,7 +247,8 @@ class DomainHandler():
                 elif self._is_float(value):
                     return ParameterType.Float
                 else:
-                    raise ValueError("Len is one but I have not specified a case for: {}".format(value))
+                    return ParameterType.NoParameter
+                    #raise ValueError("Len is one but I have not specified a case for: {}".format(value))
             else:
                 if self._is_int(value):
                     return ParameterType.Integer
@@ -256,7 +260,8 @@ class DomainHandler():
                     else:
                         return ParameterType.String
                 else:
-                    raise ValueError("Is ling but not specified...")
+                    return ParameterType.NoParameter
+                    #raise ValueError("Is ling but not specified...")
 
         else:
             if current_type == ParameterType.Digit:
