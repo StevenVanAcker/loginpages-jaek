@@ -200,6 +200,7 @@ class Crawler(JaekCore):
                     logging.debug("Fetching url: {} fails.... continue".format(plain_url_to_request))
                     continue
 
+                logging.debug("Response code is {}".format(response_code))
                 if self.crawl_with_login and self.cookie_num > 0:
                     num_cookies = count_cookies(self._network_access_manager, url_to_request)
                     logging.debug("Having {} cookies...".format(num_cookies))
@@ -288,8 +289,11 @@ class Crawler(JaekCore):
                     self.database_manager.update_clickable(current_page.id, current_clickable_to_work_on)
                     continue
                 logging.debug(
-                    "Processing Clickable Number {} from {}".format(str(counter), str(len(current_page.clickables))))
+                    "Processing Clickable Number {} ({}) from {}".format(str(counter), str(current_working_clickable_number), str(len(current_page.clickables))))
                 counter += 1
+                if counter > len(current_page.clickables) * 5: # avoiding that this spaghetticode goes in an infloop. 5 is an arbitrary number...
+                    logging.debug("Stuck in an infinite loop, bailing out")
+                    break
 
                 """
                 If event is something like "onclick", take off the "on"
@@ -350,7 +354,7 @@ class Crawler(JaekCore):
                         timeout_counter = 0
                         logging.debug("Too many loading errors... mark all clickables as error and continue")
                         for current_working_clickable_number in range(0, len(current_page.clickables)):
-                            current_clickable_to_work_on = current_page.clickable[current_working_clickable_number]
+                            current_clickable_to_work_on = current_page.clickables[current_working_clickable_number]
                             current_clickable_to_work_on.clicked = True
                             current_clickable_to_work_on.clickable_type = ClickableType.Error
                             self.database_manager.update_clickable(current_page.id, current_clickable_to_work_on)
