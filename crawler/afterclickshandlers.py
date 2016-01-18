@@ -45,6 +45,10 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         self.url = None
         self.initclick = None
         self.preclicks = []
+        self.resultFlag = False
+
+    def hasResult(self):
+        return self.resultFlag
 
     def getResult(self):
         return {
@@ -69,6 +73,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
         passwordfields = data["self"].mainFrame().findAllElements('input[type="password"]')
         self.pwFields = dict([(p.evaluateJavaScript("getXPath(this)"), p.evaluateJavaScript("jaek_isVisible(this)")) for p in passwordfields])
+        self.resultFlag = True
 #}}}
 
 class LoginPageLogger(BaseAfterClicksHandler): #{{{
