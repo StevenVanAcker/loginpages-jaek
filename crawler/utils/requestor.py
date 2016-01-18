@@ -63,8 +63,9 @@ class Requestor(InteractionCore):
             else:
                 logging.debug('Timed out')
                 parsed_html = ''
+        newurl = self.mainFrame().url().toString()
         self.mainFrame().setHtml(None)
-        return parsed_html
+        return parsed_html, newurl
     
     def _wait(self, timeout=1, pattern=None):
         """Wait for delay time
