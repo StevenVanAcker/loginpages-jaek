@@ -12,7 +12,6 @@ from PyQt5.QtCore import QSize, QUrl, QByteArray
 
 from core.eventexecutor import EventExecutor, XHRBehavior, EventResult
 from core.jaekcore import JaekCore
-from utils.requestor import Requestor
 from xvfbwrapper import Xvfb
 from models.utils import CrawlSpeed
 from models.webpage import WebPage
@@ -23,6 +22,12 @@ from replay import Replayer
 # perform a quick check on a domain for a login page, without involving the jAEk crawler itself
 
 loginKeywords = ["login", "logon", "signin"]
+
+def urlInDomain(url, domain):
+    urlparts = urlparse(url)
+    hostname = urlparts.netloc.split(":")[0]
+
+    return hostname.endswith(domain)
 
 # check that a given URL is in the correct domain, and has a login keyword
 def urlInDomainContainsLoginKeyword(url, domain, keywords):
@@ -37,7 +42,7 @@ def urlInDomainContainsLoginKeyword(url, domain, keywords):
     cleanhostname = hostname[:-len(domain)]
     
     # if a keyword is in the clean hostname, or in the URL path, it's a login page
-    return any((kw in cleanhostname or kw in urlparts.path) for kw in keywords)
+    return any((kw in cleanhostname.lower() or kw in urlparts.path.lower()) for kw in keywords)
 
 # https://docs.python.org/3/howto/sorting.html#sortinghowto
 def cmp_to_key(mycmp):
@@ -73,10 +78,11 @@ def urlPrioritySort(a, b):
 
     return 0
 
-def saveData(fn, data):
+def saveDataAndExit(fn, data):
     logging.info("Found a login page, bailing out. Data:")
     logging.info(pprint.pformat(data))
     json.dump(data, open(fn, "w"))
+    sys.exit(0)
 
 
 if __name__ == "__main__":
@@ -90,24 +96,34 @@ if __name__ == "__main__":
 
     #### Step 1: for each toplevel URL of this domain, check if it contains a login page
     topURLresults = []
+    counter = 0
     for u in topURLs:
-        xxx = LoginPageChecker("TOPURL")
+        logging.debug("Starting prescan of top url {}".format(counter))
+        xxx = LoginPageChecker("TOPURL{}".format(counter))
         rep = Replayer(afterClicksHandler=xxx)
-        rep.replay(u, None, [])
-        res = xxx.getResult()
+        errorcode, html = rep.replay(u, None, [])
 
-        # if we found a login page, save data and bail out right now
-        if "pwfields" in res and len(res["pwfields"]) > 0:
-            saveData("out.json", res)
-            sys.exit(0)
+        if xxx.hasResult():
+            logging.debug("Inspecting results for prescan of top url {}".format(counter))
+            res = xxx.getResult()
 
-        topURLresults.append(res)
+            # if we found a login page, save data and bail out right now
+            if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
+                saveDataAndExit("out.json", res)
+
+            topURLresults.append(res)
+            logging.debug("Done with prescan of top url {}".format(counter))
+        else:
+            logging.debug("Failed prescan of top url {}".format(counter))
+        counter += 1
 
     #### Step 2: if no login page is found on the toplevel URLs, look for URLs on those page containing
     # words like login, logon, signin, ... in several languages, and check those for a login page
 
     # gather set of all unique URLs
     containedURLs = list(set(itertools.chain.from_iterable([x["links"] for x in topURLresults])))
+    logging.info("Discovered these URLs: ")
+    logging.info(pprint.pformat(containedURLs))
     filteredURLs = list(filter(lambda x: urlInDomainContainsLoginKeyword(x, currentDomain, loginKeywords), containedURLs))
 
     # sort the list by priority
@@ -116,17 +132,23 @@ if __name__ == "__main__":
     logging.info(pprint.pformat(sortedURLs))
 
     for u in sortedURLs:
+        logging.debug("Starting prescan of possible login url {}".format(u))
         xxx = LoginPageChecker("LOGINURL")
         rep = Replayer(afterClicksHandler=xxx)
         rep.replay(u, None, [])
-        res = xxx.getResult()
+        if xxx.hasResult():
+            logging.debug("Inspecting results for prescan of possible login url {}".format(u))
+            res = xxx.getResult()
 
-        # if we found a login page, save data and bail out right now
-        if len(res["pwFields"]) > 0:
-            saveData("out.json", res)
-            sys.exit(0)
+            # if we found a login page, save data and bail out right now
+            if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
+                saveDataAndExit("out.json", res)
+            logging.debug("Done with prescan of possible login url {}".format(u))
+        else:
+            logging.debug("Failed prescan of possible login url {}".format(u))
 
     #### Step 3: if all else fails, launch jAEk to look for a login page
 
+    logging.debug("prescan.py is done")
     vdisplay.stop()
 
