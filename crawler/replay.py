@@ -31,7 +31,7 @@ class Replayer(JaekCore):
         self.requestor = Requestor(self, proxy, port)
 
     def replay(self, url, click=None, preclicks=[]):
-        pagehtml = self.requestor.get(QUrl(url))
+        pagehtml = self.requestor.get(QUrl(url), delay=1)
         webpage = WebPage(0, url, pagehtml)
         errorcode, deltapage = self._event_executor.execute(webpage, element_to_click=click, pre_clicks=preclicks, xhr_options=XHRBehavior.ObserveXHR)
         if deltapage == None:
