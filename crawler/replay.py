@@ -21,7 +21,7 @@ class Replayer(JaekCore):
     def __init__(self, proxy="", port=0, afterClicksHandler=None):
         QObject.__init__(self)
         self.app = QApplication(sys.argv)
-        self._network_access_manager = QNetworkAccessManager(self)
+        self._network_access_manager = None #QNetworkAccessManager(self)
 
         self._afterClicksHandler=afterClicksHandler
 
@@ -31,11 +31,16 @@ class Replayer(JaekCore):
         self.requestor = Requestor(self, proxy, port)
 
     def replay(self, url, click=None, preclicks=[]):
-        pagehtml = self.requestor.get(QUrl(url), delay=1)
-        webpage = WebPage(0, url, pagehtml)
+        pagehtml, newurl = self.requestor.get(QUrl(url), delay=1)
+        logging.debug("Requestor is at {}".format(newurl))
+        if newurl == "":
+            # couldn't load
+            return EventResult.ErrorWhileInitialLoading, None
+        webpage = WebPage(0, newurl, pagehtml)
         errorcode, deltapage = self._event_executor.execute(webpage, element_to_click=click, pre_clicks=preclicks, xhr_options=XHRBehavior.ObserveXHR)
-        if deltapage == None:
+        if click != None and deltapage == None:
             logging.info("Replay failed!")
+        return errorcode, deltapage
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s: %(levelname)s - %(message)s')
