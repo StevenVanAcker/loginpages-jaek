@@ -30,6 +30,7 @@ from models.link import Link
 from models.clickabletype import ClickableType
 from models.form import HtmlForm, FormInput
 from models.deltapage import DeltaPage
+import json
 
 # This is the database handling class. You don't really want to look down what there is.
 # Really you won't!
@@ -79,7 +80,10 @@ class Database():
 
         
     def __del__(self):
-        self.connection.close()
+        try:
+            self.connection.close()
+        except:
+            pass
      
     def prepare_for_new_crawling(self):
         self._per_session_url_counter = 0
@@ -122,7 +126,10 @@ class Database():
         document['session'] = current_session
         document["url_counter"] = self._per_session_url_counter
         self._per_session_url_counter += 1
-        self.urls.save(document)
+        try:
+            self.urls.save(document)
+        except:
+            return False
         return True
 
     def _url_to_doc_without_abstract_url(self, url):
@@ -209,15 +216,18 @@ class Database():
         return result['url']
              
     def insert_page_into_db(self, current_session, web_page):
-        for clickable in web_page.clickables:
-            self._insert_clickable_into_db(current_session, web_page.id, clickable)
-        for form in web_page.forms:
-            self.insert_form(current_session, form, web_page.id)
-        
-        document = self._create_webpage_doc(web_page, current_session)
-        document['ajax_requests'] = []
-        document['session'] = current_session
-        self.pages.save(document)
+        try:
+            for clickable in web_page.clickables:
+                self._insert_clickable_into_db(current_session, web_page.id, clickable)
+            for form in web_page.forms:
+                self.insert_form(current_session, form, web_page.id)
+            
+            document = self._create_webpage_doc(web_page, current_session)
+            document['ajax_requests'] = []
+            document['session'] = current_session
+            self.pages.save(document)
+        except:
+            pass
 
     def get_all_pages(self, current_session):
         results = []
@@ -591,14 +601,13 @@ class Database():
 
     def escape_unloved_signs(self, item):
         if isinstance(item, dict):
-            for old_key in item:
-                item[old_key.replace(".", "$$$")] = item.pop(old_key)
+            return dict([(k.replace(".", "vMfwgKVEFp"),v) for (k,v) in item.items()])
         return item
+        
 
     def unescape_unloved_signs(self, item):
         if isinstance(item, dict):
-            for old_key in item:
-                item[old_key.replace("$$$", ".")] = item.pop(old_key)
+            return dict([(k.replace("vMfwgKVEFp", "."),v) for (k,v) in item.items()])
         return item
 
     def get_url_structure_from_db(self, current_session, url_hash):
