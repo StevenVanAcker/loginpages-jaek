@@ -57,7 +57,8 @@ if __name__ == '__main__':
     url = sys.argv[1]
     # Creates the crawler config: URL: start url of the crawler(independent from login) - max_dept: how deep to crawl(link), max_click_depth: how deep to follow events - Crawlspeed: Fast is the best value here
     #crawler_config = CrawlConfig("Some Name, doesn't matter", url, max_depth=3, max_click_depth=3, crawl_speed=CrawlSpeed.Fast)
-    crawler_config = CrawlConfig("Some Name, doesn't matter", url, max_depth=3, max_click_depth=3, crawl_speed=CrawlSpeed.Speed_of_Lightning)
+    #crawler_config = CrawlConfig("Some Name, doesn't matter", url, max_depth=2, max_click_depth=-1, crawl_speed=CrawlSpeed.Speed_of_Lightning)
+    crawler_config = CrawlConfig("Some Name, doesn't matter", url, max_depth=2, max_click_depth=2, crawl_speed=CrawlSpeed.Fast)
 
     # From here you have nothing to chance. Except you want no attacking, then comment out the lines down
     logging.info("Crawler started...")
