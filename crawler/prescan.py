@@ -5,6 +5,7 @@ import pprint
 from urllib.parse import urlparse
 import itertools
 import json
+import re
 
 from PyQt5.Qt import QApplication, QObject
 from PyQt5.QtNetwork import QNetworkAccessManager
@@ -90,8 +91,24 @@ if __name__ == "__main__":
     vdisplay = Xvfb()
     vdisplay.start()
 
-    currentDomain = sys.argv[1]
-    topURLpatterns = ["http://{}", "http://www.{}", "https://{}", "https://www.{}"]
+    currentDomain = sys.argv[1].lower()
+
+    if not re.match('^[.-0-9a-z]+$', currentDomain):
+        logging.info("Invalid domain name {}".format(currentDomain))
+        sys.exit(1)
+
+    topURLpatterns = [
+        "http://{}", 
+        "http://login.{}", 
+        "http://{}/login", 
+        "http://www.{}", 
+        "http://www.{}/login", 
+        "https://{}", 
+        "https://login.{}", 
+        "https://{}/login", 
+        "https://www.{}", 
+        "https://www.{}/login", 
+    ]
     topURLs = [x.format(currentDomain) for x in topURLpatterns]
 
     #### Step 1: for each toplevel URL of this domain, check if it contains a login page
