@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 import itertools
 import json
 import re
+import string
 
 from PyQt5.Qt import QApplication, QObject
 from PyQt5.QtNetwork import QNetworkAccessManager
@@ -85,6 +86,10 @@ def saveDataAndExit(fn, data):
     json.dump(data, open(fn, "w"))
     sys.exit(0)
 
+def isValidDomain(d):
+    validchars = string.ascii_lowercase + string.digits + "-."
+    return all(c in validchars for c in d)
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s: %(levelname)s - %(message)s')
@@ -93,7 +98,7 @@ if __name__ == "__main__":
 
     currentDomain = sys.argv[1].lower()
 
-    if not re.match('^[.-0-9a-z]+$', currentDomain):
+    if not isValidDomain(currentDomain):
         logging.info("Invalid domain name {}".format(currentDomain))
         sys.exit(1)
 
@@ -115,13 +120,13 @@ if __name__ == "__main__":
     topURLresults = []
     counter = 0
     for u in topURLs:
-        logging.debug("Starting prescan of top url {}".format(counter))
+        logging.debug("Starting prescan of top url {}: {}".format(counter, u))
         xxx = LoginPageChecker("TOPURL{}".format(counter))
         rep = Replayer(afterClicksHandler=xxx)
         errorcode, html = rep.replay(u, None, [])
 
         if xxx.hasResult():
-            logging.debug("Inspecting results for prescan of top url {}".format(counter))
+            logging.debug("Inspecting results for prescan of top url {}: {}".format(counter, u))
             res = xxx.getResult()
 
             # if we found a login page, save data and bail out right now
@@ -129,9 +134,9 @@ if __name__ == "__main__":
                 saveDataAndExit("out.json", res)
 
             topURLresults.append(res)
-            logging.debug("Done with prescan of top url {}".format(counter))
+            logging.debug("Done with prescan of top url {}: {}".format(counter, u))
         else:
-            logging.debug("Failed prescan of top url {}".format(counter))
+            logging.debug("Failed prescan of top url {}: {}".format(counter, u))
         counter += 1
 
     #### Step 2: if no login page is found on the toplevel URLs, look for URLs on those page containing
