@@ -25,7 +25,7 @@ from time import time, sleep
 from core.jsbridge import JsBridge
 from models.clickable import Clickable
 from models.utils import CrawlSpeed
-import logging
+import logging, os
 
 class InteractionCore(QWebPage):
     '''
@@ -53,32 +53,32 @@ class InteractionCore(QWebPage):
             self.wait_for_processing = 0.01
             self.wait_for_event = 0.1
         
-        f = open("js/lib.js", encoding="utf-8")
+        f = open(os.path.join(os.path.dirname(__file__), "../js/lib.js"), encoding="utf-8")
         self._lib_js = f.read()
         f.close()
         
-        f = open("js/ajax_observer.js", encoding="utf-8")
+        f = open(os.path.join(os.path.dirname(__file__), "../js/ajax_observer.js"), encoding="utf-8")
         self._xhr_observe_js = f.read()
         f.close()
         
-        f = open("js/timing_wrapper.js", encoding="utf-8")
+        f = open(os.path.join(os.path.dirname(__file__), "../js/timing_wrapper.js"), encoding="utf-8")
         self._timeming_wrapper_js = f.read()
         f.close()
         
         
-        f = open("js/ajax_interceptor.js", encoding="utf-8")
+        f = open(os.path.join(os.path.dirname(__file__), "../js/ajax_interceptor.js"), encoding="utf-8")
         self._xhr_interception_js = f.read()
         f.close()
         
-        f = open("js/addeventlistener_wrapper.js", encoding="utf-8")
+        f = open(os.path.join(os.path.dirname(__file__), "../js/addeventlistener_wrapper.js"), encoding="utf-8")
         self._addEventListener = f.read()
         f.close()
         
-        f = open("js/md5.js", encoding="utf-8")
+        f = open(os.path.join(os.path.dirname(__file__), "../js/md5.js"), encoding="utf-8")
         self._md5 = f.read()
         f.close()
 
-        f = open("js/property_obs.js", encoding="utf-8")
+        f = open(os.path.join(os.path.dirname(__file__), "../js/property_obs.js"), encoding="utf-8")
         self._property_obs_js = f.read()
         f.close()
 
