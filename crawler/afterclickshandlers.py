@@ -38,9 +38,10 @@ class BaseAfterClicksHandler(object): #{{{
 
 
 class LoginPageChecker(BaseAfterClicksHandler): #{{{
-    def __init__(self, srctype):
+    def __init__(self, srctype, origurl):
         self.links = []
         self.srctype = srctype
+        self.origurl = origurl
         self.pwFields = {}
         self.url = None
         self.initclick = None
@@ -56,6 +57,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             "srctype": self.srctype,
             "pwfields": self.pwFields,
             "url": self.url,
+            "origurl": self.origurl,
             "element_to_click": self.initclick.toDict() if self.initclick != None else None,
             "pre_clicks": [x.toDict() if x != None else None for x in self.preclicks],
         }
