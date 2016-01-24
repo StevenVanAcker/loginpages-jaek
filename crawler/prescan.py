@@ -116,7 +116,7 @@ if __name__ == "__main__":
     counter = 0
     for u in topURLs:
         logging.debug("Starting prescan of top url {}".format(counter))
-        xxx = LoginPageChecker("TOPURL{}".format(counter))
+        xxx = LoginPageChecker("TOPURL{} {}".format(counter, topURLpatterns[counter]), u)
         rep = Replayer(afterClicksHandler=xxx)
         errorcode, html = rep.replay(u, None, [])
 
@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
     for u in sortedURLs:
         logging.debug("Starting prescan of possible login url {}".format(u))
-        xxx = LoginPageChecker("LOGINURL")
+        xxx = LoginPageChecker("LOGINURL", u)
         rep = Replayer(afterClicksHandler=xxx)
         rep.replay(u, None, [])
         if xxx.hasResult():
@@ -160,6 +160,7 @@ if __name__ == "__main__":
             # if we found a login page, save data and bail out right now
             if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
                 saveDataAndExit("out.json", res)
+
             logging.debug("Done with prescan of possible login url {}".format(u))
         else:
             logging.debug("Failed prescan of possible login url {}".format(u))
