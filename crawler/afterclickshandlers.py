@@ -76,6 +76,8 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         passwordfields = data["self"].mainFrame().findAllElements('input[type="password"]')
         self.pwFields = dict([(p.evaluateJavaScript("getXPath(this)"), p.evaluateJavaScript("jaek_isVisible(this)")) for p in passwordfields])
         logging.debug("Logging something so that jAEK doesn't crap out...")
+        if len(passwordfields) > 0:
+            data["self"].screenshot("screenshot.png")
         self.resultFlag = True
 #}}}
 
