@@ -1,22 +1,18 @@
-from asyncio.tasks import sleep
+from time import sleep
 import logging
 import sys
 import pprint
 from urllib.parse import urlparse
 import itertools
 import json
-import re
 import string
 
-from PyQt5.Qt import QApplication, QObject
-from PyQt5.QtNetwork import QNetworkAccessManager
-from PyQt5.QtCore import QSize, QUrl, QByteArray
-
-from core.eventexecutor import EventExecutor, XHRBehavior, EventResult
-from core.jaekcore import JaekCore
 from xvfbwrapper import Xvfb
 from models.utils import CrawlSpeed
-from models.webpage import WebPage
+from utils.user import User
+from utils.config import CrawlConfig
+from crawler import Crawler
+from database.databasemanager import DatabaseManager
 
 from afterclickshandlers import LoginPageChecker
 from replay import Replayer
@@ -86,6 +82,11 @@ def saveDataAndExit(fn, data):
     json.dump(data, open(fn, "w"))
     sys.exit(0)
 
+def failDataAndExit(fn, data):
+    logging.info("Saving prescan URL and bailing out")
+    json.dump(data, open(fn, "w"))
+    sys.exit(1)
+
 def isValidDomain(d):
     validchars = string.ascii_lowercase + string.digits + "-."
     return all(c in validchars for c in d)
@@ -116,6 +117,8 @@ if __name__ == "__main__":
     ]
     topURLs = [x.format(currentDomain) for x in topURLpatterns]
 
+    firstWorkingURL = None
+
     #### Step 1: for each toplevel URL of this domain, check if it contains a login page
     topURLresults = []
     counter = 0
@@ -126,17 +129,21 @@ if __name__ == "__main__":
         errorcode, html = rep.replay(u, None, [])
 
         if xxx.hasResult():
+            if firstWorkingURL == None:
+                firstWorkingURL = u
             logging.debug("Inspecting results for prescan of top url {}: {}".format(counter, u))
             res = xxx.getResult()
 
             # if we found a login page, save data and bail out right now
             if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                saveDataAndExit("out.json", res)
+                saveDataAndExit("output.json", res)
 
             topURLresults.append(res)
             logging.debug("Done with prescan of top url {}: {}".format(counter, u))
         else:
             logging.debug("Failed prescan of top url {}: {}".format(counter, u))
+        xxx = None
+        rep = None
         counter += 1
 
     #### Step 2: if no login page is found on the toplevel URLs, look for URLs on those page containing
@@ -164,14 +171,14 @@ if __name__ == "__main__":
 
             # if we found a login page, save data and bail out right now
             if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                saveDataAndExit("out.json", res)
+                saveDataAndExit("output.json", res)
 
             logging.debug("Done with prescan of possible login url {}".format(u))
         else:
             logging.debug("Failed prescan of possible login url {}".format(u))
-
-    #### Step 3: if all else fails, launch jAEk to look for a login page
-
+        xxx = None
+        rep = None
+    failDataAndExit("output.json", {"crawlurl": firstWorkingURL})
     logging.debug("prescan.py is done")
     vdisplay.stop()
 
