@@ -27,7 +27,7 @@ from utils.user import User
 import csv
 from utils.utils import calculate_similarity_between_pages
 from xvfbwrapper import Xvfb
-from afterclickshandlers import LoginPageLogger
+from afterclickshandlers import LoginPageChecker
 
 # Here you can specify the logging. Now it logs to the console. If you uncomment the two lines below, then it logs in the file.
 logging.basicConfig(level=logging.DEBUG,
@@ -51,10 +51,15 @@ if __name__ == '__main__':
     #user = User("WordpressX", 0, "http://localhost:8080/wp-login.php", login_data = {"log": "admin", "pwd": "admin"}, session="ABC")
 
 
-    # Crawl without user session. Parameter desc: Name of DB - Privilege level - session
-    user = User("Test", 0, session="ABC")
 
     url = sys.argv[1]
+    domain = sys.argv[2]
+
+    dbname = domain.replace(".", "_")
+
+    # Crawl without user session. Parameter desc: Name of DB - Privilege level - session
+    user = User(dbname, 0, session="ABC")
+
     # Creates the crawler config: URL: start url of the crawler(independent from login) - max_dept: how deep to crawl(link), max_click_depth: how deep to follow events - Crawlspeed: Fast is the best value here
     crawler_config = CrawlConfig("Some Name, doesn't matter", url, max_depth=3, max_click_depth=3, crawl_speed=CrawlSpeed.Fast)
     #crawler_config = CrawlConfig("Some Name, doesn't matter", url, max_depth=2, max_click_depth=-1, crawl_speed=CrawlSpeed.Speed_of_Lightning)
@@ -63,7 +68,8 @@ if __name__ == '__main__':
     # From here you have nothing to chance. Except you want no attacking, then comment out the lines down
     logging.info("Crawler started...")
     database_manager = DatabaseManager(user, dropping=True)
-    crawler = Crawler(crawl_config=crawler_config, database_manager=database_manager, afterClicksHandler=LoginPageLogger())#, proxy="localhost", port=8082)
+    xxx = LoginPageChecker("CRAWL", None)
+    crawler = Crawler(crawl_config=crawler_config, database_manager=database_manager, afterClicksHandler=xxx)#, proxy="localhost", port=8082)
     crawler.crawl(user)
     logging.info("Crawler finished")
 
