@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
             # if we found a login page, save data and bail out right now
             if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                saveDataAndExit("out.json", res)
+                saveDataAndExit("output.json", res)
 
             topURLresults.append(res)
             logging.debug("Done with prescan of top url {}: {}".format(counter, u))
@@ -171,14 +171,14 @@ if __name__ == "__main__":
 
             # if we found a login page, save data and bail out right now
             if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                saveDataAndExit("out.json", res)
+                saveDataAndExit("output.json", res)
 
             logging.debug("Done with prescan of possible login url {}".format(u))
         else:
             logging.debug("Failed prescan of possible login url {}".format(u))
         xxx = None
         rep = None
-    failDataAndExit("out.json", {"crawlurl": firstWorkingURL})
+    failDataAndExit("output.json", {"crawlurl": firstWorkingURL})
     logging.debug("prescan.py is done")
     vdisplay.stop()
 
