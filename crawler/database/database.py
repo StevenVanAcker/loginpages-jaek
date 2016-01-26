@@ -46,7 +46,7 @@ DOM_ADDRESS = "dom_address"
 class Database():
     
     def __init__(self, db_name, drop_dbs=True):
-        self.connection=pymongo.MongoClient()
+        self.connection=pymongo.MongoClient("localhost", 27018)
         self.database = self.connection[db_name]
         self.pages = self.database.pages
         #self.pages.ensure_index( "id", pymongo.ASCENDING, unique=True)
