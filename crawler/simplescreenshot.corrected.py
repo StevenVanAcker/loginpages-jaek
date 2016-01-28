@@ -13,16 +13,24 @@ from xvfbwrapper import Xvfb
 
 globTimeout = 5
 
-class MyNetworkAccessManager(QNetworkAccessManager): 
+class MyNetworkAccessManager(QNetworkAccessManager):
     def __init__(self):
         QNetworkAccessManager.__init__(self)
         self.sslErrors.connect(self._sslErrors)
         self.p = QNetworkProxy(QNetworkProxy.HttpProxy, "localhost", 8080, None, None)
+        self.finished.connect(self._finished)
         #self.setProxy(self.p)
 
-    def createRequest(self, operation, request, data): 
+    def createRequest(self, operation, request, data):
         logging.debug("mymanager handles {}".format(request.url()))
-        return QNetworkAccessManager.createRequest(self, operation, request, data) 
+        return QNetworkAccessManager.createRequest(self, operation, request, data)
+
+    def _finished(self, reply):
+        #logging.debug("mymanager finished reply {}".format(reply))
+        logging.debug("mymanager finished reply for {}".format(reply.request().url()))
+        logging.debug("   Headers:")
+        for k,v in reply.rawHeaderPairs():
+            logging.debug("       {}: {}".format(k, v))
 
     def _sslErrors(self, reply, errors):
         logging.debug("sslErrors!! {} {}".format(reply, errors))
@@ -30,8 +38,8 @@ class MyNetworkAccessManager(QNetworkAccessManager):
 
 class Screenshot(QWebView):
     def __init__(self):
+        self.app = QApplication(sys.argv)
         QWebView.__init__(self)
-        self.show()
         self.dontremove = MyNetworkAccessManager()
         self.page().setNetworkAccessManager(self.dontremove)
         self._loaded = False
@@ -40,11 +48,9 @@ class Screenshot(QWebView):
         self.loadProgress.connect(self._loadProgress)
 
     def capture(self, url, output_file):
-        self._file = output_file
         self.load(QUrl(url))
+        time.sleep(globTimeout)
 
-    def _loadFinished(self, result):
-        self._loaded = True
         # set to webpage size
         frame = self.page().mainFrame()
         self.page().setViewportSize(frame.contentsSize())
@@ -53,8 +59,10 @@ class Screenshot(QWebView):
         painter = QPainter(image)
         frame.render(painter)
         painter.end()
-        logging.debug('saving {}'.format(self._file))
-        image.save(self._file)
+        logging.debug('saving {}'.format(output_file))
+        image.save(output_file)
+
+    def _loadFinished(self, result):
         logging.debug("Load finished {}".format(result))
 
     def _loadStarted(self):
