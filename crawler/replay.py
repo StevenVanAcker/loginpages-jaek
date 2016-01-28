@@ -30,14 +30,14 @@ class Replayer(JaekCore):
 
         self.requestor = Requestor(self, proxy, port)
 
-    def replay(self, url, click=None, preclicks=[]):
-        pagehtml, newurl = self.requestor.get(QUrl(url), delay=1)
+    def replay(self, url, click=None, preclicks=[], timeout=60):
+        pagehtml, newurl = self.requestor.get(QUrl(url), delay=1, timeout=timeout)
         logging.debug("Requestor is at {}".format(newurl))
         if newurl == "":
             # couldn't load
             return EventResult.ErrorWhileInitialLoading, None
         webpage = WebPage(0, newurl, pagehtml)
-        errorcode, deltapage = self._event_executor.execute(webpage, element_to_click=click, pre_clicks=preclicks, xhr_options=XHRBehavior.ObserveXHR)
+        errorcode, deltapage = self._event_executor.execute(webpage, element_to_click=click, pre_clicks=preclicks, xhr_options=XHRBehavior.ObserveXHR, timeout=timeout)
         if click != None and deltapage == None:
             logging.info("Replay failed!")
         return errorcode, deltapage
