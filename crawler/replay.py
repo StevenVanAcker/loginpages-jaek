@@ -4,7 +4,7 @@ import sys
 
 from PyQt5.Qt import QApplication, QObject
 from PyQt5.QtNetwork import QNetworkAccessManager
-from PyQt5.QtCore import QSize, QUrl, QByteArray
+from PyQt5.QtCore import QSize, QUrl
 
 from core.eventexecutor import EventExecutor, XHRBehavior, EventResult
 from core.jaekcore import JaekCore
