@@ -177,10 +177,8 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         logging.info("Resources:")
         logging.info(pprint.pformat(self.getResourceData(self.url, data["self"])))
         networkdata = data["self"].getLoggedNetworkData()
-        logging.info("Redirects:")
-        logging.info(pprint.pformat(networkdata["redirects"]))
-        logging.info("Headers:")
-        logging.info(pprint.pformat(networkdata["headers"]))
+        logging.info("Network Data:")
+        logging.info(pprint.pformat(networkdata))
         
         self.resultFlag = True
 #}}}
