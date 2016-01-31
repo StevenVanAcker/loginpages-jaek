@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 
 from xvfbwrapper import Xvfb
 
-class MyNetworkAccessManager(QNetworkAccessManager):
+class RedirectLoggerNetworkAccessManager(QNetworkAccessManager):
     def __init__(self):
         QNetworkAccessManager.__init__(self)
         self.finished.connect(self._finished)
@@ -33,12 +33,14 @@ class MyNetworkAccessManager(QNetworkAccessManager):
             self._logRedirect(reply.request().url().toString(), newloc.toString())
 
 
-class MyWebPage(QWebPage):
+class RedirectLoggerWebPage(QWebPage):
     def __init__(self, p):
         QWebPage.__init__(self, p)
         self.mainFrame().urlChanged.connect(self._urlChanged)
         self.loadStarted.connect(self._loadStarted)
         self.previousUrl = None
+        self.nam = RedirectLoggerNetworkAccessManager()
+        self.setNetworkAccessManager(self.nam)
 
 
     def _urlChanged(self, newurl):
@@ -74,35 +76,33 @@ class MyWebPage(QWebPage):
         return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36"
 
 
-def timer_func():
-    global app, nam
-    #print("Done")
-    print("REDIECTS: {}".format(pprint.pformat(nam.redirects)))
-    app.exit(0)
+if __name__ == "__main__":
+    def timer_func():
+        global app, nam
+        #print("Done")
+        print("REDIECTS: {}".format(pprint.pformat(nam.redirects)))
+        app.exit(0)
 
-url = sys.argv[1]
+    url = sys.argv[1]
 
-vdisplay = Xvfb()
-vdisplay.start()
-app = QApplication(sys.argv)
+    vdisplay = Xvfb()
+    vdisplay.start()
+    app = QApplication(sys.argv)
 
 
-wv = QWebView()
-wv.app = app
+    wv = QWebView()
+    wv.app = app
 
-wp = MyWebPage(wv)
-wv.setPage(wp)
+    wp = RedirectLoggerWebPage(wv)
+    wv.setPage(wp)
 
-nam = MyNetworkAccessManager()
-wv.page().setNetworkAccessManager(nam)
+    timer = QTimer()
+    timer.timeout.connect(timer_func)
+    timer.start(60*1000)
 
-timer = QTimer()
-timer.timeout.connect(timer_func)
-timer.start(60*1000)
+    wv.load(QUrl(url))
 
-wv.load(QUrl(url))
-
-app.exec_()
-#print("Exiting")
-vdisplay.stop()
+    app.exec_()
+    #print("Exiting")
+    vdisplay.stop()
 

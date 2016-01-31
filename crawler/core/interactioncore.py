@@ -25,6 +25,7 @@ from time import time, sleep
 from core.jsbridge import JsBridge
 from models.clickable import Clickable
 from models.utils import CrawlSpeed
+from redirectlogger import RedirectLoggerNetworkAccessManager
 import logging, os
 
 class InteractionCore(QWebPage):
@@ -32,6 +33,8 @@ class InteractionCore(QWebPage):
     This is the main class for interacting with a webpage, here are all necessary js-files loaded, and signal connections build
     '''    
     def __init__(self, parent, proxy = "", port = 0, crawl_speed = CrawlSpeed.Medium, network_access_manager = None):
+
+
         QWebPage.__init__(self, parent)
         self.app = parent.app
         self._js_bridge = JsBridge(self)
@@ -39,6 +42,10 @@ class InteractionCore(QWebPage):
         self.mainFrame().javaScriptWindowObjectCleared.connect(self.jsWinObjClearedHandler)
         self.frameCreated.connect(self.frameCreatedHandler)
         self.setViewportSize(QSize(1024, 800))
+
+        self.mainFrame().urlChanged.connect(self._urlChanged)
+        self.loadStarted.connect(self._loadStarted)
+        self.previousUrl = None
 
         if crawl_speed == CrawlSpeed.Slow:
             self.wait_for_processing = 1
@@ -91,8 +98,10 @@ class InteractionCore(QWebPage):
         self.settings().setAttribute(QWebSettings.JavascriptEnabled, True)
         self.settings().setAttribute(QWebSettings.JavascriptCanOpenWindows, True)
         
-        if network_access_manager:
-            self.setNetworkAccessManager(network_access_manager)
+        self.nam = RedirectLoggerNetworkAccessManager()
+        self.setNetworkAccessManager(self.nam)
+        #if network_access_manager:
+        #    self.setNetworkAccessManager(network_access_manager)
         
         if proxy != "" and port != 0: 
             manager = self.networkAccessManager()
@@ -102,6 +111,39 @@ class InteractionCore(QWebPage):
 
         #Have to connect it here, otherwise I could connect it to the old one and then replaces it
         self.networkAccessManager().finished.connect(self.loadComplete)
+
+    def stopLogging(self):
+        self.networkAccessManager().stopLogging()
+
+    def setLoggedNetworkData(self, d):
+        return self.networkAccessManager().setLoggedNetworkData(d)
+
+    def getLoggedNetworkData(self):
+        return self.networkAccessManager().getLoggedNetworkData()
+
+    def _urlChanged(self, newurl):
+        if self.previousUrl != None and newurl.toString() == self.previousUrl.toString():
+            # ignore this...
+            return
+
+        if self.previousUrl == None:
+            logging.debug("urlChanged from None to {}".format(newurl.toString()))
+        else:
+            logging.debug("urlChanged from {} to {}".format(self.previousUrl.toString(), newurl.toString()))
+        self.previousUrl = newurl
+
+    def _loadStarted(self):
+        newurl = self.mainFrame().requestedUrl()
+        if self.previousUrl != None and newurl.toString() == self.previousUrl.toString():
+            # ignore this...
+            return
+
+        if self.previousUrl == None:
+            logging.debug("loadStarted from None to {}".format(newurl.toString()))
+        else:
+            logging.debug("loadStarted from {} to {}".format(self.previousUrl.toString(), newurl.toString()))
+            self.nam._logRedirect(self.previousUrl.toString(), newurl.toString())
+        self.previousUrl = newurl
 
     def analyze(self, html, requested_url, timeout = 20):
         raise NotImplemented()

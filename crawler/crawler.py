@@ -49,7 +49,7 @@ class Crawler(JaekCore):
     def __init__(self, crawl_config, proxy="", port=0, database_manager=None, afterClicksHandler=None):
         QObject.__init__(self)
         self.app = QApplication(sys.argv)
-        self._network_access_manager = QNetworkAccessManager(self)
+        self._network_access_manager = None #QNetworkAccessManager(self)
         #self._network_access_manager = self._dynamic_analyzer.networkAccessManager()
 
         self._afterClicksHandler=afterClicksHandler
@@ -114,7 +114,7 @@ class Crawler(JaekCore):
                 self._event_executor = None
                 self._form_handler = None
                 self._event_executor = None
-                self._network_access_manager = QNetworkAccessManager(self)
+                #self._network_access_manager = QNetworkAccessManager(self)
                 self._event_executor = EventExecutor(self, self.proxy, self.port, crawl_speed=self.crawl_config.process_speed,
                                              network_access_manager=self._network_access_manager, afterClicksHandler=self._afterClicksHandler)
                 self._dynamic_analyzer = MainAnalyzer(self, self.proxy, self.port, crawl_speed=self.crawl_config.process_speed,

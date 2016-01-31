@@ -37,7 +37,7 @@ class JaekCore(QObject):
     def __init__(self, config, proxy="", port=0, database_manager=None):
         QObject.__init__(self)
         self.app = QApplication(sys.argv)
-        self._network_access_manager = QNetworkAccessManager(self)
+        self._network_access_manager = None #QNetworkAccessManager(self)
         self.user = None
         self.proxy = proxy
         self.port = port

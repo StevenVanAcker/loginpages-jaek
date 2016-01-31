@@ -155,10 +155,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 urls.append((a, c1, c2, o, s, sri))
 
         outdata["applet"] = urls
-
-
-        logging.info(pprint.pformat(outdata))
-
+        return outdata
 
     def handle(self, data, errorcode):
         self.initclick = data["element_to_click"]
@@ -177,7 +174,14 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         if len(passwordfields) > 0:
             data["self"].screenshot("screenshot.png")
 
-        self.getResourceData(self.url, data["self"])
+        logging.info("Resources:")
+        logging.info(pprint.pformat(self.getResourceData(self.url, data["self"])))
+        networkdata = data["self"].getLoggedNetworkData()
+        logging.info("Redirects:")
+        logging.info(pprint.pformat(networkdata["redirects"]))
+        logging.info("Headers:")
+        logging.info(pprint.pformat(networkdata["headers"]))
+        
         self.resultFlag = True
 #}}}
 

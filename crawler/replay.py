@@ -8,7 +8,7 @@ from PyQt5.QtCore import QSize, QUrl, QByteArray
 
 from core.eventexecutor import EventExecutor, XHRBehavior, EventResult
 from core.jaekcore import JaekCore
-from utils.requestor import Requestor
+from utils.myrequestor import MyRequestor
 from xvfbwrapper import Xvfb
 from models.utils import CrawlSpeed
 from models.webpage import WebPage
@@ -28,10 +28,14 @@ class Replayer(JaekCore):
         self._event_executor = EventExecutor(self, proxy, port, crawl_speed=CrawlSpeed.Speed_of_Lightning,
              network_access_manager=self._network_access_manager, afterClicksHandler=self._afterClicksHandler)
 
-        self.requestor = Requestor(self, proxy, port)
+        self.requestor = MyRequestor(self, proxy, port)
 
     def replay(self, url, click=None, preclicks=[], timeout=60):
-        pagehtml, newurl = self.requestor.get(QUrl(url), delay=1, timeout=timeout)
+        pagehtml, newurl = self.requestor.get(QUrl(url), delay=20, timeout=timeout)
+
+        self._event_executor.stopLogging()
+        self._event_executor.setLoggedNetworkData(self.requestor.getLoggedNetworkData())
+
         logging.debug("Requestor is at {}".format(newurl))
         if newurl == "":
             # couldn't load
