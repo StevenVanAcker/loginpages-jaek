@@ -140,6 +140,8 @@ class InteractionCore(QWebPage):
 
         if self.previousUrl == None:
             logging.debug("loadStarted from None to {}".format(newurl.toString()))
+        elif newurl.toString() == "":
+            logging.debug("loadStarted from {} to nowhere".format(self.previousUrl.toString()))
         else:
             logging.debug("loadStarted from {} to {}".format(self.previousUrl.toString(), newurl.toString()))
             self.nam._logRedirect(self.previousUrl.toString(), newurl.toString())
