@@ -188,10 +188,110 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
         logging.info("Resources:")
         logging.info(pprint.pformat(self.getResourceData(self.url, data["self"])))
+
+
+        # TODO main page:
+        #    check redirect chain. Do we have an HTTP hop?
+        #    <HTTPSVULN>
+        #    is the form target set to HTTPS?
+        #        the form target can not redirect through HTTP, since POST requests can not have a redirect without a HTTP 307 code which triggers user interaction
+        #        <HTTPSVULN>
+
+        # TODO for resources, form the main page:
+        #    is CSP set with upgrade-insecure-resources?
+        #    is HTTP upgrade-insecure-resources header set?
+        #    is SRI set?
+        
+        # TODO for each resource:
+        #    is the resource loaded over HTTP? does the redirect chain have HTTP?
+        #    <HTTPSVULN>
+
+        # "HTTPSVULN" for any HTTPS URL:
+        #    is HSTS set? what is max-age?
+        #    is the hostname on the HSTS preload list?
+        #    is the key pinned?
+        #    is the key pinned in the browser?
+        #    does the host have SSL vulns?
+        # https://github.com/rbsec/sslscan
+        # https://github.com/okoeroo/drssl
+        # https://github.com/nabla-c0d3/sslyze
+        # BEAST, Lucky Thirteen, BREACH, POODLE, Heartbleed, FREAK, DROWN, CRIME, LogJam
+
+        '''
+                data = {
+                    "mainpage": [
+                    { "url": "...",
+                      "httpcode": None | 301,
+                      "headers": [ ],
+                      "sslinfo": [ ],
+                    }]
+                    "resources": [{
+                      "type": ...
+                      "sri": ...
+                      "redirectchain": [{
+                          "url": ...,
+                          "httpcode": ...,
+                          "headers": ...,
+                          "sslinfo": ...
+                      }]
+                    }]
+                    "formtarget": [{
+                          "url": ...,
+                          "httpcode": ...,
+                          "headers": ...,
+                          "sslinfo": ...
+                      }],
+                    "pwfield": {
+                    }
+                    }
+                }
+        '''
+
+        out = {}
         networkdata = data["self"].getLoggedNetworkData()
         logging.info("Network Data:")
         logging.info(pprint.pformat(networkdata))
+        print("-------------------------")
+        print("-------------------------")
+        print("-------------------------")
         
+        ####################
+        # Building the information about the main page redirect chain
+        ####################
+        out["mainpage"] = []
+        currurl = self.origurl
+        nextcode = None
+        redirectlist = []
+
+        while currurl != None:
+            h = networkdata["headers"][currurl] if currurl in networkdata["headers"] else None
+            s = networkdata["sslinfo"][currurl] if currurl in networkdata["sslinfo"] else None
+            nextcode = networkdata["redirects"][currurl]["httpcode"] if currurl in networkdata["redirects"] else None
+            redirectlist += [currurl]
+            nexturl = networkdata["redirects"][currurl]["url"] if currurl in networkdata["redirects"] else None
+
+            out["mainpage"].append({
+                "url": currurl,
+                "nexturl": nexturl,
+                "headers": h,
+                "sslinfo": s,
+                "nextRedirectViaHttpcode": nextcode,
+            })
+
+            currurl = nexturl
+            if currurl in redirectlist:
+                logging.debug("Redirect chain loops back to {} -> stopping loop".format(currurl))
+                currurl = None
+
+        ####################
+        # Building the information about the resources loaded from the main page
+        ####################
+        logging.debug("For science!! remove the following line")
+        out = {} # FIXME
+        out["resources"] = []
+
+        logging.info(pprint.pformat(out))
+
         self.resultFlag = True
 #}}}
     def handleRedirectPage(self, data): #{{{
