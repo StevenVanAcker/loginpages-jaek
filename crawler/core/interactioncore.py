@@ -32,7 +32,7 @@ class InteractionCore(QWebPage):
     '''
     This is the main class for interacting with a webpage, here are all necessary js-files loaded, and signal connections build
     '''    
-    def __init__(self, parent, proxy = "", port = 0, crawl_speed = CrawlSpeed.Medium, network_access_manager = None):
+    def __init__(self, parent, proxy = "", port = 0, crawl_speed = CrawlSpeed.Medium, network_access_manager = None, afterClicksHandler = None):
 
 
         QWebPage.__init__(self, parent)
@@ -46,6 +46,8 @@ class InteractionCore(QWebPage):
         self.mainFrame().urlChanged.connect(self._urlChanged)
         self.loadStarted.connect(self._loadStarted)
         self.previousUrl = None
+
+        self.afterClicksHandler = afterClicksHandler
 
         if crawl_speed == CrawlSpeed.Slow:
             self.wait_for_processing = 1
@@ -112,6 +114,14 @@ class InteractionCore(QWebPage):
         #Have to connect it here, otherwise I could connect it to the old one and then replaces it
         self.networkAccessManager().finished.connect(self.loadComplete)
 
+    def triggerAfterClicksHandler(self, name, data, errorcode):
+        if self.afterClicksHandler:
+            if name == "afterclicks":
+                self.afterClicksHandler.handle(data, errorcode)
+            if name == "beforeHTTPredirect":
+                self.afterClicksHandler.handleRedirectPage(data)
+
+
     def stopLogging(self):
         self.networkAccessManager().stopLogging()
 
@@ -146,6 +156,9 @@ class InteractionCore(QWebPage):
             logging.debug("loadStarted from {} to {}".format(self.previousUrl.toString(), newurl.toString()))
             self.nam._logRedirect(self.previousUrl.toString(), newurl.toString())
         self.previousUrl = newurl
+
+        logging.info("InteractionCore _loadStarted on {} with {}".format(newurl, self.mainFrame().toHtml()))
+        self.triggerAfterClicksHandler("beforeHTTPredirect", self, None)
 
     def analyze(self, html, requested_url, timeout = 20):
         raise NotImplemented()

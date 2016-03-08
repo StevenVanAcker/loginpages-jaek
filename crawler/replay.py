@@ -28,7 +28,7 @@ class Replayer(JaekCore):
         self._event_executor = EventExecutor(self, proxy, port, crawl_speed=CrawlSpeed.Speed_of_Lightning,
              network_access_manager=self._network_access_manager, afterClicksHandler=self._afterClicksHandler)
 
-        self.requestor = MyRequestor(self, proxy, port)
+        self.requestor = MyRequestor(self, proxy, port, afterClicksHandler=self._afterClicksHandler)
 
     def replay(self, url, click=None, preclicks=[], timeout=60):
         pagehtml, newurl = self.requestor.get(QUrl(url), delay=20, timeout=timeout)

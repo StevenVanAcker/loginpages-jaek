@@ -2,14 +2,15 @@ from time import time, sleep
 import logging
 
 from PyQt5.Qt import QEventLoop, QTimer, QUrl
+from PyQt5.QtWebKitWidgets import QWebPage
 
 from core.interactioncore import InteractionCore
 from models.utils import CrawlSpeed
 
 
 class MyRequestor(InteractionCore):
-    def __init__(self, parent, proxy, port, crawl_speed = CrawlSpeed.Medium):
-        super(MyRequestor, self).__init__(parent, proxy, port, crawl_speed)
+    def __init__(self, parent, proxy, port, crawl_speed = CrawlSpeed.Medium, afterClicksHandler=None):
+        super(MyRequestor, self).__init__(parent, proxy, port, crawl_speed, afterClicksHandler=afterClicksHandler)
         self.resultToReturn = None
         self.doneLoading = False
         self.loadFinished.connect(self._loadFinished)

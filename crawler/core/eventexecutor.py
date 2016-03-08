@@ -37,7 +37,7 @@ from models.utils import CrawlSpeed, purge_dublicates
 class EventExecutor(InteractionCore):
 
     def __init__(self, parent, proxy="", port=0, crawl_speed=CrawlSpeed.Medium, network_access_manager=None, afterClicksHandler=None):
-        super(EventExecutor, self).__init__(parent, proxy, port, crawl_speed, network_access_manager)
+        super(EventExecutor, self).__init__(parent, proxy, port, crawl_speed, network_access_manager, afterClicksHandler=afterClicksHandler)
         self._url_changed = False  # Inidicates if a event changes a location => treat it as link!
         self._new_url = None
         self.timeming_events = None
@@ -50,11 +50,6 @@ class EventExecutor(InteractionCore):
         self.seen_timeouts = {}
         self.popup = None # reference if a popup occurs...
         self.mainFrame().urlChanged.connect(self._url_changes)
-        self.afterClicksHandler = afterClicksHandler
-
-    def triggerAfterClicksHandler(self, data, errorcode):
-        if self.afterClicksHandler:
-            self.afterClicksHandler.handle(data, errorcode)
 
     def execute(self, webpage, timeout=5, element_to_click=None, xhr_options=XHRBehavior.ObserveXHR, pre_clicks=[]):
         logging.debug(
@@ -151,7 +146,7 @@ class EventExecutor(InteractionCore):
 
         if real_clickable is None:
             logging.debug("Target Clickable not found")
-            self.triggerAfterClicksHandler(cbData, EventResult.TargetElementNotFound)
+            self.triggerAfterClicksHandler("afterclicks", cbData, EventResult.TargetElementNotFound)
             return EventResult.TargetElementNotFound, None
 
         self._capturing_ajax = True
@@ -176,7 +171,7 @@ class EventExecutor(InteractionCore):
             delta_page = DeltaPage(-1, self._new_url.toString(), html=None, generator=generator, parent_id=webpage.id,
                                    cookiesjar=webpage.cookiejar)
             self._analyzing_finished = True
-            self.triggerAfterClicksHandler(cbData, EventResult.URLChanged)
+            self.triggerAfterClicksHandler("afterclicks", cbData, EventResult.URLChanged)
             self.mainFrame().setHtml(None)
             return EventResult.URLChanged, delta_page
         elif self.popup is not None:
@@ -185,7 +180,7 @@ class EventExecutor(InteractionCore):
             delta_page = DeltaPage(-1, popup_url, html=None, generator=generator, parent_id=webpage.id)
             self.popup = None
             self._analyzing_finished = True
-            self.triggerAfterClicksHandler(cbData, EventResult.CreatesPopup)
+            self.triggerAfterClicksHandler("afterclicks", cbData, EventResult.CreatesPopup)
             self.mainFrame().setHtml(None)
             return EventResult.CreatesPopup, delta_page
         else:
@@ -203,7 +198,7 @@ class EventExecutor(InteractionCore):
             delta_page.forms = forms
             delta_page.ajax_requests = self.ajax_requests
             self._analyzing_finished = True
-            self.triggerAfterClicksHandler(cbData, EventResult.Ok)
+            self.triggerAfterClicksHandler("afterclicks", cbData, EventResult.Ok)
             self.mainFrame().setHtml(None)
             return EventResult.Ok, delta_page
 
