@@ -58,6 +58,8 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         self.preclicks = []
         self.resultFlag = False
 
+
+
     def hasResult(self):
         return self.resultFlag
 
@@ -167,7 +169,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         outdata["applet"] = urls
         return outdata
 
-    def handle(self, data, errorcode):
+    def handle(self, data, errorcode): #{{{
         self.initclick = data["element_to_click"]
         self.preclicks = data["pre_clicks"]
         self.url = data["webpage"].url
@@ -197,7 +199,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 #}}}
 #}}}
 
-class LoginPageLogger(BaseAfterClicksHandler): #{{{
+class UnusedLoginPageLogger(BaseAfterClicksHandler): #{{{
     def __init__(self):
         self.counter = 0
 
