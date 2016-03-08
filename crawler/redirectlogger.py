@@ -23,14 +23,18 @@ class RedirectLoggerNetworkAccessManager(QNetworkAccessManager):
     def setLoggedNetworkData(self, data):
         self.networkdata = copy.deepcopy(data)
 
-    def _logRedirect(self, fromurl, tourl):
+    def _logRedirect(self, fromurl, tourl, httpcode):
         if self.stopLoggingFlag:
             logging.debug("RedirectLoggerNetworkAccessManager.stopLoggingFlag = True, refusing to log more.")
             return
 
         if fromurl not in self.networkdata["redirects"]:
             fullurl = urljoin(fromurl, tourl)
-            self.networkdata["redirects"][fromurl] = fullurl
+            logging.debug("Logging redirect from {} to {}".format(fromurl, fullurl))
+            self.networkdata["redirects"][fromurl] = {
+                "url": fullurl,
+                "httpcode": httpcode
+            }
         else:
             logging.debug("ERROR: _logRedirect(): previous redirect from {} to {} contradicts new target {}".format(fromurl, self.networkdata["redirects"][fromurl], tourl))
 
@@ -67,7 +71,7 @@ class RedirectLoggerNetworkAccessManager(QNetworkAccessManager):
         if newloc != None:
             # 30x redirect
             logging.debug("URL redirect {} from {} to {}".format(httpcode, origurl, newloc.toString()))
-            self._logRedirect(origurl, newloc.toString())
+            self._logRedirect(origurl, newloc.toString(), httpcode)
 
     def sslProtoName(self, p):
         plist = {
