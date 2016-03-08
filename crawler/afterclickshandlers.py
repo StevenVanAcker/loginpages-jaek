@@ -2,7 +2,7 @@
 
 import logging, sys, json, pprint
 from time import sleep
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse, ParseResult
 
 from models.clickable import Clickable
 from core.eventexecutor import EventResult
@@ -41,6 +41,16 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
     def __init__(self, srctype, origurl):
         self.links = []
         self.srctype = srctype
+
+        # toplevel URLs that have no path (e.g. http://test.com)
+        # should be converted to end in / (http://test.com/)
+        # otherwise things are messed up. WebKit translates http://test.com to http://test.com/ automagically
+        # which messes up the redirect chain. So perform this translation even before Webkit does it.
+        urlparts = urlparse(origurl)
+        if urlparts.path == "":
+            urlparts = ParseResult(urlparts[0], urlparts[1], "/", urlparts[3], urlparts[4], urlparts[5])
+            origurl = urlparts.geturl()
+
         self.origurl = origurl
         self.pwFields = {}
         self.url = None
