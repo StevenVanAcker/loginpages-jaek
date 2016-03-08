@@ -210,6 +210,7 @@ class EventExecutor(InteractionCore):
         return True
 
     def loadFinishedHandler(self, result):
+        # This only gets called after all redirects get handled, not from one redirect to another
         if not self._analyzing_finished:  # Just to ignoring setting of non page....
             self._loading_complete = True
 
@@ -260,7 +261,6 @@ class EventExecutor(InteractionCore):
     def createWindow(self, webWindowType):
         self.popup = QWebPage()
         return self.popup
-
 
 class EventResult(Enum):
     Ok = 0
