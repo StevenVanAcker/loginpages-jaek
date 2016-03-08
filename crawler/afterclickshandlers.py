@@ -182,6 +182,10 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         
         self.resultFlag = True
 #}}}
+    def handleRedirectPage(self, data): #{{{
+        logging.info("afterClickHandler.handleRedirectPage says {}".format(data.mainFrame().toHtml()))
+#}}}
+#}}}
 
 class LoginPageLogger(BaseAfterClicksHandler): #{{{
     def __init__(self):
