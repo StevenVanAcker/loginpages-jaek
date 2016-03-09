@@ -89,16 +89,18 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
             # 2. check for CSP HTTP header with upgrade-insecure-requests set, or upgrade-insecure-requests HTTP header
             # there can be multiple HTTP headers...
-            csplist = [v for (k,v) in currentheaders.items() if k.lower() == "content-security-policy"]
-            uirlist = [v for (k,v) in currentheaders.items() if k.lower() == "upgrade-insecure-requests"]
+            csplisthttp = [v for (k,v) in currentheaders.items() if k.lower() == "content-security-policy"]
+            uirlisthttp = [v for (k,v) in currentheaders.items() if k.lower() == "upgrade-insecure-requests"]
 
-            if any("upgrade-insecure-requests" in l.lower() for l in csplist) or len(uirlist) > 0:
-                uir = True
-            else:
-                # 3. check for same headers as <meta> elements
-                logging.debug("FIXME FIXME FIXME")
-                pass # FIXME
+            # 3. check for same headers as <meta> elements
+            elements = page.mainFrame().findAllElements('meta')
+            csplistmeta = [e.attribute("content", "").strip() for e in elements if e.attribute("http-equiv", "").lower().strip() == "content-security-policy"]
+            uirlistmeta = [e.attribute("content", "").strip() for e in elements if e.attribute("http-equiv", "").lower().strip() == "upgrade-insecure-requests"]
 
+            csplist = csplisthttp + csplistmeta
+            uirlist = uirlisthttp + uirlistmeta
+
+            uir = any("upgrade-insecure-requests" in l.lower() for l in csplist) or len(uirlist) > 0
         else:
             logging.debug("Couldn't find the headers :(")
 
