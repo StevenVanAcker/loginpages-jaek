@@ -78,6 +78,30 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
     def getResourceData(self, url, page):
         logging.debug("Retrieving resources from {}".format(url))
         outdata = {}
+
+        # check upgrade-insecure-requests HTTP header and CSP
+        uir = False
+        # 1. get network data for current URL
+        nwdata = page.getLoggedNetworkData()
+        if "headers" in nwdata and url in nwdata["headers"]:
+            currentheaders = nwdata["headers"][url]
+            logging.debug(pprint.pformat(currentheaders))
+
+            # 2. check for CSP HTTP header with upgrade-insecure-requests set, or upgrade-insecure-requests HTTP header
+            # there can be multiple HTTP headers...
+            csplist = [v for (k,v) in currentheaders.items() if k.lower() == "content-security-policy"]
+            uirlist = [v for (k,v) in currentheaders.items() if k.lower() == "upgrade-insecure-requests"]
+
+            if any("upgrade-insecure-requests" in l.lower() for l in csplist) or len(uirlist) > 0:
+                uir = True
+            else:
+                # 3. check for same headers as <meta> elements
+                logging.debug("FIXME FIXME FIXME")
+                pass # FIXME
+
+        else:
+            logging.debug("Couldn't find the headers :(")
+
         
         # Find script resources
         elements = page.mainFrame().findAllElements('script')
@@ -92,7 +116,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                     nt = "vbscript"
                 if nt != None:
                     ns = urljoin(url, s)
-                    urls[ns] = { "type": nt, "sri": sri!=""}
+                    urls[ns] = { "type": nt, "sri": sri!="", "uir": uir}
         outdata["script"] = urls
 
         # Find css resources
@@ -102,7 +126,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         for (s, sri) in pairs:
             if s != "":
                 ns = urljoin(url, s)
-                urls[ns] = { "sri": sri!=""}
+                urls[ns] = { "sri": sri!="", "uir": uir}
         outdata["css"] = urls
 
         # Find object resources
@@ -127,7 +151,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                     
                 if nt != "":
                     nd = urljoin(url, d)
-                    urls[nd] = {"sri": nsri, "typemustmatch": ntmm, "type": nt}
+                    urls[nd] = {"sri": nsri, "typemustmatch": ntmm, "type": nt, "uir": uir}
 
         outdata["object"] = urls
 
@@ -152,7 +176,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                     
                 if nt != "":
                     nd = urljoin(url, s)
-                    urls[nd] = {"sri": nsri, "type": nt}
+                    urls[nd] = {"sri": nsri, "type": nt, "uir": uir}
 
         outdata["embed"] = urls
 
@@ -165,7 +189,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             nsri = (sri!="")
             [a, c1, c2, o, s] = [urljoin(url, x) if x != "" else "" for x in [a, c1, c2, o, s]]
             if (a, c1, c2, o, s) != ("", "", "", "", ""):
-                urls.append((a, c1, c2, o, s, sri))
+                urls.append((a, c1, c2, o, s, sri, uir))
 
         outdata["applet"] = urls
         return outdata
