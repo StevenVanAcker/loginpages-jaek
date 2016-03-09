@@ -194,6 +194,14 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 urls.append((a, c1, c2, o, s, sri, uir))
 
         outdata["applet"] = urls
+
+        # augment the resource data with redirects
+        for (k,v) in outdata.items():
+            # we don't care about applets since they are like voodoo when it comes to specifying URL
+            if k != "applet":
+                for (u,v2) in v.items():
+                    v2["redirectchain"] = self.buildNetworkTrace(u, page)
+
         return outdata
 #}}}
     def handle(self, data, errorcode): #{{{
@@ -285,30 +293,9 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         ####################
         # Building the information about the main page redirect chain
         ####################
-        out["mainpage"] = []
-        currurl = self.origurl
-        nextcode = None
-        redirectlist = []
-
-        while currurl != None:
-            h = networkdata["headers"][currurl] if currurl in networkdata["headers"] else None
-            s = networkdata["sslinfo"][currurl] if currurl in networkdata["sslinfo"] else None
-            nextcode = networkdata["redirects"][currurl]["httpcode"] if currurl in networkdata["redirects"] else None
-            redirectlist += [currurl]
-            nexturl = networkdata["redirects"][currurl]["url"] if currurl in networkdata["redirects"] else None
-
-            out["mainpage"].append({
-                "url": currurl,
-                "nexturl": nexturl,
-                "headers": h,
-                "sslinfo": s,
-                "nextRedirectViaHttpcode": nextcode,
-            })
-
-            currurl = nexturl
-            if currurl in redirectlist:
-                logging.debug("Redirect chain loops back to {} -> stopping loop".format(currurl))
-                currurl = None
+        out["mainpage"] = self.buildNetworkTrace(self.origurl, data["self"])
+        logging.info("XXXX Reconstructed redirect chain:")
+        logging.info(pprint.pformat(out))
 
         ####################
         # Building the information about the resources loaded from the main page
@@ -328,6 +315,40 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             self.redirectPageResources[url] = x
         else:
             logging.debug("Afterclickhandler: not logging resources for URL {}, since we already visited it earlier.".format(url))
+#}}}
+    def buildNetworkTrace(self, url, data): #{{{
+        '''
+        From the supplied data, reconstruct the redirect chain with HTTP headers and SSL information for each hop
+        Returns a list
+        '''
+        out = []
+        currurl = url
+        nextcode = None
+        redirectlist = []
+
+        networkdata = data.getLoggedNetworkData()
+
+        while currurl != None:
+            h = networkdata["headers"][currurl] if currurl in networkdata["headers"] else None
+            s = networkdata["sslinfo"][currurl] if currurl in networkdata["sslinfo"] else None
+            nextcode = networkdata["redirects"][currurl]["httpcode"] if currurl in networkdata["redirects"] else None
+            redirectlist += [currurl]
+            nexturl = networkdata["redirects"][currurl]["url"] if currurl in networkdata["redirects"] else None
+
+            out.append({
+                "url": currurl,
+                "nexturl": nexturl,
+                "headers": h,
+                "sslinfo": s,
+                "nextRedirectViaHttpcode": nextcode,
+            })
+
+            currurl = nexturl
+            if currurl in redirectlist:
+                logging.debug("Redirect chain loops back to {} -> stopping loop".format(currurl))
+                currurl = None
+
+        return out
 #}}}
 #}}}
 
