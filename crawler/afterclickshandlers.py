@@ -58,9 +58,9 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         self.preclicks = []
         self.resultFlag = False
 
-
-
-    def hasResult(self):
+        self.redirectPageResources = {}
+#}}}
+    def hasResult(self): #{{{
         return self.resultFlag
 
     def getResult(self):
@@ -72,6 +72,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             "origurl": self.origurl,
             "element_to_click": self.initclick.toDict() if self.initclick != None else None,
             "pre_clicks": [x.toDict() if x != None else None for x in self.preclicks],
+            "redirectPageResources": self.redirectPageResources
         }
 
     def getResourceData(self, url, page):
@@ -294,8 +295,15 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
         self.resultFlag = True
 #}}}
-    def handleRedirectPage(self, data): #{{{
-        logging.info("afterClickHandler.handleRedirectPage says {}".format(data.mainFrame().toHtml()))
+    def handleRedirectPage(self, url, data): #{{{
+        if url == None:
+            return
+
+        if url not in self.redirectPageResources:
+            x = self.getResourceData(url, data)
+            self.redirectPageResources[url] = x
+        else:
+            logging.debug("Afterclickhandler: not logging resources for URL {}, since we already visited it earlier.".format(url))
 #}}}
 #}}}
 

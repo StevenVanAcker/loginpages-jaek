@@ -114,12 +114,12 @@ class InteractionCore(QWebPage):
         #Have to connect it here, otherwise I could connect it to the old one and then replaces it
         self.networkAccessManager().finished.connect(self.loadComplete)
 
-    def triggerAfterClicksHandler(self, name, data, errorcode):
+    def triggerAfterClicksHandler(self, name, d):
         if self.afterClicksHandler:
             if name == "afterclicks":
-                self.afterClicksHandler.handle(data, errorcode)
+                self.afterClicksHandler.handle(d["data"], d["errorcode"])
             if name == "beforeHTTPredirect":
-                self.afterClicksHandler.handleRedirectPage(data)
+                self.afterClicksHandler.handleRedirectPage(d["url"], d["self"])
 
 
     def stopLogging(self):
@@ -156,10 +156,9 @@ class InteractionCore(QWebPage):
         else:
             logging.debug("loadStarted from {} to {}".format(self.previousUrl.toString(), newurl.toString()))
             self.nam._logRedirect(self.previousUrl.toString(), newurl.toString(), None)
-        self.previousUrl = newurl
 
-        logging.info("InteractionCore _loadStarted on {} with {}".format(newurl, self.mainFrame().toHtml()))
-        self.triggerAfterClicksHandler("beforeHTTPredirect", self, None)
+        self.triggerAfterClicksHandler("beforeHTTPredirect", {"url": self.previousUrl.toString() if self.previousUrl!=None else None, "self": self})
+        self.previousUrl = newurl
 
     def analyze(self, html, requested_url, timeout = 20):
         raise NotImplemented()
