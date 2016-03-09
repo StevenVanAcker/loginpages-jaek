@@ -38,7 +38,7 @@ class BaseAfterClicksHandler(object): #{{{
 
 
 class LoginPageChecker(BaseAfterClicksHandler): #{{{
-    def __init__(self, srctype, origurl):
+    def __init__(self, srctype, origurl): #{{{
         self.links = []
         self.srctype = srctype
 
@@ -62,8 +62,8 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 #}}}
     def hasResult(self): #{{{
         return self.resultFlag
-
-    def getResult(self):
+#}}}
+    def getResult(self): #{{{
         return {
             "links": self.links,
             "srctype": self.srctype,
@@ -74,8 +74,8 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             "pre_clicks": [x.toDict() if x != None else None for x in self.preclicks],
             "redirectPageResources": self.redirectPageResources
         }
-
-    def getResourceData(self, url, page):
+#}}}
+    def getResourceData(self, url, page): #{{{
         logging.debug("Retrieving resources from {}".format(url))
         outdata = {}
 
@@ -193,7 +193,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
         outdata["applet"] = urls
         return outdata
-
+#}}}
     def handle(self, data, errorcode): #{{{
         self.initclick = data["element_to_click"]
         self.preclicks = data["pre_clicks"]
@@ -244,12 +244,12 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
         '''
                 data = {
-                    "mainpage": [
-                    { "url": "...",
-                      "httpcode": None | 301,
-                      "headers": [ ],
-                      "sslinfo": [ ],
-                    }]
+             X      "mainpage": [
+             X      { "url": "...",
+             X        "httpcode": None | 301,
+             X        "headers": [ ],
+             X        "sslinfo": [ ],
+             X      }]
                     "resources": [{
                       "type": ...
                       "sri": ...
@@ -314,8 +314,6 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         logging.debug("For science!! remove the following line")
         out = {} # FIXME
         out["resources"] = []
-
-        logging.info(pprint.pformat(out))
 
         self.resultFlag = True
 #}}}
