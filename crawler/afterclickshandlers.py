@@ -59,6 +59,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         self.resultFlag = False
 
         self.redirectPageResources = {}
+        self.mainRedirectChain = []
 #}}}
     def hasResult(self): #{{{
         return self.resultFlag
@@ -72,11 +73,11 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             "origurl": self.origurl,
             "element_to_click": self.initclick.toDict() if self.initclick != None else None,
             "pre_clicks": [x.toDict() if x != None else None for x in self.preclicks],
-            "redirectPageResources": self.redirectPageResources
+            "redirectPageResources": self.redirectPageResources,
+            "mainRedirectChain": self.mainRedirectChain
         }
 #}}}
     def getResourceData(self, url, page): #{{{
-        logging.debug("Retrieving resources from {}".format(url))
         outdata = {}
 
         # check upgrade-insecure-requests HTTP header and CSP
@@ -85,7 +86,6 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         nwdata = page.getLoggedNetworkData()
         if "headers" in nwdata and url in nwdata["headers"]:
             currentheaders = nwdata["headers"][url]
-            logging.debug(pprint.pformat(currentheaders))
 
             # 2. check for CSP HTTP header with upgrade-insecure-requests set, or upgrade-insecure-requests HTTP header
             # there can be multiple HTTP headers...
@@ -221,8 +221,8 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         if len(passwordfields) > 0:
             data["self"].screenshot("screenshot.png")
 
-        logging.info("Resources:")
-        logging.info(pprint.pformat(self.getResourceData(self.url, data["self"])))
+        #logging.info("Resources:")
+        #logging.info(pprint.pformat(self.getResourceData(self.url, data["self"])))
 
 
         # TODO main page:
@@ -260,16 +260,16 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
              X        "headers": [ ],
              X        "sslinfo": [ ],
              X      }]
-                    "resources": [{
-                      "type": ...
-                      "sri": ...
-                      "redirectchain": [{
-                          "url": ...,
-                          "httpcode": ...,
-                          "headers": ...,
-                          "sslinfo": ...
-                      }]
-                    }]
+             X      "resources": [{
+             X        "type": ...
+             X        "sri": ...
+             X        "redirectchain": [{
+             X            "url": ...,
+             X            "httpcode": ...,
+             X            "headers": ...,
+             X            "sslinfo": ...
+             X        }]
+             X      }]
                     "formtarget": [{
                           "url": ...,
                           "httpcode": ...,
@@ -282,27 +282,10 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 }
         '''
 
-        out = {}
-        networkdata = data["self"].getLoggedNetworkData()
-        logging.info("Network Data:")
-        logging.info(pprint.pformat(networkdata))
-        print("-------------------------")
-        print("-------------------------")
-        print("-------------------------")
-        
         ####################
         # Building the information about the main page redirect chain
         ####################
-        out["mainpage"] = self.buildNetworkTrace(self.origurl, data["self"])
-        logging.info("XXXX Reconstructed redirect chain:")
-        logging.info(pprint.pformat(out))
-
-        ####################
-        # Building the information about the resources loaded from the main page
-        ####################
-        logging.debug("For science!! remove the following line")
-        out = {} # FIXME
-        out["resources"] = []
+        self.mainRedirectChain = self.buildNetworkTrace(self.origurl, data["self"])
 
         self.resultFlag = True
 #}}}
