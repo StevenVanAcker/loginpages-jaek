@@ -140,7 +140,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             nsri = (sri!="")
             ntmm = (tmm.lower()=="true")
             if d != "":
-                nt = ""
+                nt = "UNKNOWN---{}".format(classid.lower())
                 if classid.lower() == "clsid:d27cdb6e-ae6d-11cf-96b8-444553540000":
                     nt = "flash"
                 if "flash" in t.lower():
