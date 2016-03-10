@@ -216,7 +216,19 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 self.links.append(urljoin(base, href))
 
         passwordfields = data["self"].mainFrame().findAllElements('input[type="password"]')
-        self.pwFields = dict([(p.evaluateJavaScript("getXPath(this)"), p.evaluateJavaScript("jaek_isVisible(this)")) for p in passwordfields])
+        self.pwFields = {}
+        for pwf in passwordfields:
+            xpath = pwf.evaluateJavaScript("getXPath(this)")
+            isvis = pwf.evaluateJavaScript("jaek_isVisible(this)")
+            formtarget = pwf.evaluateJavaScript("jaek_FormTargetFromPW(this)")
+            if formtarget:
+                formtarget = urljoin(base, formtarget)
+            else:
+                formtarget = None
+            self.pwFields[xpath] = {
+                "isVisible": isvis,
+                "formTarget": formtarget
+            }
         logging.debug("Logging something so that jAEK doesn't crap out...")
         if len(passwordfields) > 0:
             data["self"].screenshot("screenshot.png")
@@ -246,6 +258,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         #    is the hostname on the HSTS preload list?
         #    is the key pinned?
         #    is the key pinned in the browser?
+
         #    does the host have SSL vulns?
         # https://github.com/rbsec/sslscan
         # https://github.com/okoeroo/drssl

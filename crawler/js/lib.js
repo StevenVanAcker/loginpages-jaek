@@ -366,3 +366,12 @@ function jaek_isVisible(el){
     return (rect.height + rect.width) != 0;
 };
 
+function jaek_FormTargetFromPW(el){
+    if(el == null) { return null; }
+
+    if(el.tagName == "FORM") {
+        return el.getAttribute("action");
+    }
+
+    return jaek_FormTargetFromPW(el.parentElement);
+};
