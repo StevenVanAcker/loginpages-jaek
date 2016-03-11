@@ -350,7 +350,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 "loadSucceeded": h != None and h != {},
                 "HSTSPreload": hstspreload,
                 "HSTSSet": hstsset,
-                "HSTSAge": hstsZeroAge,
+                "HSTSZeroAge": hstsZeroAge,
                 "HSTSIncludeSubs": hstsIncludeSubs,
             })
 
