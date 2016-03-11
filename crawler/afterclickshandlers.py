@@ -341,6 +341,16 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 hstsIncludeSubs = any("includesubdomains" in l.lower() for l in hstsheaders)
                 hstsset = len(hstsheaders) > 0
 
+            # HTTP Public Key Pins
+            hpkpZeroAge = False
+            hpkpIncludeSubs = False
+            hpkpset = False
+            if h != None:
+                hpkpheaders = [v for (k,v) in h.items() if k.lower() == "public-key-pins"]
+                hpkpZeroAge = any("max-age=0" in l.lower() for l in hpkpheaders)
+                hpkpIncludeSubs = any("includesubdomains" in l.lower() for l in hpkpheaders)
+                hpkpset = len(hpkpheaders) > 0
+
             out.append({
                 "url": currurl,
                 "nexturl": nexturl,
@@ -352,6 +362,9 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 "HSTSSet": hstsset,
                 "HSTSZeroAge": hstsZeroAge,
                 "HSTSIncludeSubs": hstsIncludeSubs,
+                "HPKPSet": hpkpset,
+                "HPKPZeroAge": hpkpZeroAge,
+                "HPKPIncludeSubs": hpkpIncludeSubs,
             })
 
             currurl = nexturl
