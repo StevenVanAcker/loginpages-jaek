@@ -80,14 +80,15 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
     def getResourceData(self, url, page): #{{{
         outdata = {}
 
-        # check upgrade-insecure-requests HTTP header and CSP
+        # check CSP and other HTTP headers
         uir = False
+        bamc = False
         # 1. get network data for current URL
         nwdata = page.getLoggedNetworkData()
         if "headers" in nwdata and url in nwdata["headers"]:
             currentheaders = nwdata["headers"][url]
 
-            # 2. check for CSP HTTP header with upgrade-insecure-requests set, or upgrade-insecure-requests HTTP header
+            # 2. check for HTTP header
             # there can be multiple HTTP headers...
             csplisthttp = [v for (k,v) in currentheaders.items() if k.lower() == "content-security-policy"]
             uirlisthttp = [v for (k,v) in currentheaders.items() if k.lower() == "upgrade-insecure-requests"]
@@ -101,6 +102,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             uirlist = uirlisthttp + uirlistmeta
 
             uir = any("upgrade-insecure-requests" in l.lower() for l in csplist) or len(uirlist) > 0
+            bamc = any("block-all-mixed-content" in l.lower() for l in csplist)
         else:
             logging.debug("Couldn't find the headers :(")
 
@@ -118,7 +120,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                     nt = "vbscript"
                 if nt != None:
                     ns = urljoin(url, s)
-                    urls[ns] = { "type": nt, "sri": sri!="", "uir": uir}
+                    urls[ns] = { "type": nt, "sri": sri!="", "uir": uir, "bamc": bamc}
         outdata["script"] = urls
 
         # Find css resources
@@ -128,7 +130,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         for (s, sri) in pairs:
             if s != "":
                 ns = urljoin(url, s)
-                urls[ns] = { "sri": sri!="", "uir": uir}
+                urls[ns] = { "sri": sri!="", "uir": uir, "bamc": bamc}
         outdata["css"] = urls
 
         # Find object resources
@@ -153,7 +155,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                     
                 if nt != "":
                     nd = urljoin(url, d)
-                    urls[nd] = {"sri": nsri, "typemustmatch": ntmm, "type": nt, "uir": uir}
+                    urls[nd] = {"sri": nsri, "typemustmatch": ntmm, "type": nt, "uir": uir, "bamc": bamc}
 
         outdata["object"] = urls
 
@@ -178,7 +180,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                     
                 if nt != "":
                     nd = urljoin(url, s)
-                    urls[nd] = {"sri": nsri, "type": nt, "uir": uir}
+                    urls[nd] = {"sri": nsri, "type": nt, "uir": uir, "bamc": bamc}
 
         outdata["embed"] = urls
 
@@ -191,7 +193,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             nsri = (sri!="")
             [a, c1, c2, o, s] = [urljoin(url, x) if x != "" else "" for x in [a, c1, c2, o, s]]
             if (a, c1, c2, o, s) != ("", "", "", "", ""):
-                urls.append((a, c1, c2, o, s, sri, uir))
+                urls.append((a, c1, c2, o, s, sri, uir, bamc))
 
         outdata["applet"] = urls
 
@@ -245,7 +247,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         #        <HTTPSVULN>
 
         # TODO for resources, form the main page:
-        #    is CSP set with upgrade-insecure-resources?
+        #    is CSP set with upgrade-insecure-resources or block-all-mixed-content?
         #    is HTTP upgrade-insecure-resources header set?
         #    is SRI set?
         
