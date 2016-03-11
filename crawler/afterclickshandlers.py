@@ -331,6 +331,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             redirectlist += [currurl]
             nexturl = networkdata["redirects"][currurl]["url"] if currurl in networkdata["redirects"] else None
 
+            # HTTP Strict Transport Security
             hstspreload = self.HSTSPreloadListChecker.urlInList(currurl)
             hstsZeroAge = False
             hstsIncludeSubs = False
