@@ -348,47 +348,6 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 #}}}
 #}}}
 
-class UnusedLoginPageLogger(BaseAfterClicksHandler): #{{{
-    def __init__(self):
-        self.counter = 0
-
-    def handle(self, data, errorcode):
-        #logging.info(data["self"].mainFrame().toHtml())
-
-        #if errorcode == EventResult.TargetElementNotFound:
-        #    logging.info("Recorded some error! HTML is ")
-        #    logging.info(data["self"].mainFrame().toHtml())
-
-        initclick = data["element_to_click"]
-        preclicks = data["pre_clicks"]
-        allclicks = []
-        if initclick:
-            allclicks.append(initclick.toDict())
-        if preclicks:
-            allclicks.extend([x.toDict() for x in preclicks])
-
-        passwordfields = data["self"].mainFrame().findAllElements('input[type="password"]')
-
-        xps = [p.evaluateJavaScript("getXPath(this)") for p in passwordfields]
-        viss = [p.evaluateJavaScript("jaek_isVisible(this)") for p in passwordfields]
-
-        for i in range(len(xps)):
-            xp = xps[i]
-            vis = viss[i]
-            logging.debug("    ({}) password field {}: {}".format(vis, xp, passwordfields[i].toOuterXml()))
-
-        logging.info("Taking screenshot of {} with clicks: {}".format(data["webpage"].url, json.dumps(allclicks)))
-        if len(passwordfields) > 0: #any(viss):
-            data["self"].screenshot("yespw{}.png".format(self.counter))
-            self.saveData("yespw{}.json".format(self.counter), data["webpage"].url, initclick, preclicks)
-            logging.info("Found a password field, exiting")
-            sys.exit(0)
-        else:
-            data["self"].screenshot("nopw{}.png".format(self.counter))
-            self.saveData("nopw{}.json".format(self.counter), data["webpage"].url, initclick, preclicks)
-        self.counter += 1
-#}}}
-
 class ScreenshotTaker(BaseAfterClicksHandler): #{{{
     def __init__(self):
         self.counter = 0
