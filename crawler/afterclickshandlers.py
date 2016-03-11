@@ -334,6 +334,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 "headers": h,
                 "sslinfo": s,
                 "nextRedirectViaHttpcode": nextcode,
+                "loadSucceeded": h != None and h != {},
             })
 
             currurl = nexturl
