@@ -6,6 +6,7 @@ from urllib.parse import urljoin, urlparse, ParseResult
 
 from models.clickable import Clickable
 from core.eventexecutor import EventResult
+from HSTSPreloadList import HSTSPreloadList
 
 class BaseAfterClicksHandler(object): #{{{
     def handle(self, data, errorcode):
@@ -38,9 +39,10 @@ class BaseAfterClicksHandler(object): #{{{
 
 
 class LoginPageChecker(BaseAfterClicksHandler): #{{{
-    def __init__(self, srctype, origurl): #{{{
+    def __init__(self, srctype, origurl, hstspreloadchecker): #{{{
         self.links = []
         self.srctype = srctype
+        self.HSTSPreloadListChecker = hstspreloadchecker
 
         # toplevel URLs that have no path (e.g. http://test.com)
         # should be converted to end in / (http://test.com/)
@@ -311,7 +313,8 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 #}}}
     def buildNetworkTrace(self, url, data): #{{{
         '''
-        From the supplied data, reconstruct the redirect chain with HTTP headers and SSL information for each hop
+        From the supplied data, reconstruct the redirect chain with HTTP headers and SSL information for each hop.
+        This information also includes a set of flags that can help determine whether a resource is loaded securely or not.
         Returns a list
         '''
         out = []
@@ -328,6 +331,10 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             redirectlist += [currurl]
             nexturl = networkdata["redirects"][currurl]["url"] if currurl in networkdata["redirects"] else None
 
+            hstspreload = self.HSTSPreloadListChecker.urlInList(currurl)
+            hstsAge = 0
+            hstsset = False
+
             out.append({
                 "url": currurl,
                 "nexturl": nexturl,
@@ -335,6 +342,9 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 "sslinfo": s,
                 "nextRedirectViaHttpcode": nextcode,
                 "loadSucceeded": h != None and h != {},
+                "HSTSPreload": hstspreload,
+                "HSTSSet": hstsset,
+                "HSTSAge": hstsAge,
             })
 
             currurl = nexturl

@@ -116,6 +116,7 @@ if __name__ == "__main__":
         "https://www.{}/login", 
     ]
     topURLs = [x.format(currentDomain) for x in topURLpatterns]
+    hstspreloadchecker = HSTSPreloadList()
 
     firstWorkingURL = None
 
@@ -124,7 +125,7 @@ if __name__ == "__main__":
     counter = 0
     for u in topURLs:
         logging.debug("Starting prescan of top url {}".format(counter))
-        xxx = LoginPageChecker("TOPURL{} {}".format(counter, topURLpatterns[counter]), u)
+        xxx = LoginPageChecker("TOPURL{} {}".format(counter, topURLpatterns[counter]), u, hstspreloadchecker)
         rep = Replayer(afterClicksHandler=xxx)
         errorcode, html = rep.replay(u, None, [])
 

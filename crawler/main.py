@@ -28,6 +28,7 @@ import csv
 from utils.utils import calculate_similarity_between_pages
 from xvfbwrapper import Xvfb
 from afterclickshandlers import LoginPageChecker
+from HSTSPreloadList import HSTSPreloadList
 
 # Here you can specify the logging. Now it logs to the console. If you uncomment the two lines below, then it logs in the file.
 logging.basicConfig(level=logging.DEBUG,
@@ -68,7 +69,8 @@ if __name__ == '__main__':
     # From here you have nothing to chance. Except you want no attacking, then comment out the lines down
     logging.info("Crawler started...")
     database_manager = DatabaseManager(user, dropping=True)
-    xxx = LoginPageChecker("CRAWL", None)
+    hstspreloadchecker = HSTSPreloadList()
+    xxx = LoginPageChecker("CRAWL", None, hstspreloadchecker)
     crawler = Crawler(crawl_config=crawler_config, database_manager=database_manager, afterClicksHandler=xxx)#, proxy="localhost", port=8082)
     crawler.crawl(user)
     logging.info("Crawler finished")
