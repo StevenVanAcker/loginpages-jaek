@@ -285,15 +285,10 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
              X            "sslinfo": ...
              X        }]
              X      }]
-                    "formtarget": [{
-                          "url": ...,
-                          "httpcode": ...,
-                          "headers": ...,
-                          "sslinfo": ...
-                      }],
-                    "pwfield": {
-                    }
-                    }
+             X      "pwfields": {
+             X          "xpath": { "isvisbile": True|False, "formtarget": None|URL }
+             X          ...
+             X      }
                 }
         '''
 
