@@ -332,8 +332,14 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             nexturl = networkdata["redirects"][currurl]["url"] if currurl in networkdata["redirects"] else None
 
             hstspreload = self.HSTSPreloadListChecker.urlInList(currurl)
-            hstsAge = 0
+            hstsZeroAge = False
+            hstsIncludeSubs = False
             hstsset = False
+            if h != None:
+                hstsheaders = [v for (k,v) in h.items() if k.lower() == "strict-transport-security"]
+                hstsZeroAge = any("max-age=0" in l.lower() for l in hstsheaders)
+                hstsIncludeSubs = any("includesubdomains" in l.lower() for l in hstsheaders)
+                hstsset = len(hstsheaders) > 0
 
             out.append({
                 "url": currurl,
@@ -344,7 +350,8 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 "loadSucceeded": h != None and h != {},
                 "HSTSPreload": hstspreload,
                 "HSTSSet": hstsset,
-                "HSTSAge": hstsAge,
+                "HSTSAge": hstsZeroAge,
+                "HSTSIncludeSubs": hstsIncludeSubs,
             })
 
             currurl = nexturl
