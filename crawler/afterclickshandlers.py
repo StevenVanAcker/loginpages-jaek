@@ -225,13 +225,15 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             xpath = pwf.evaluateJavaScript("getXPath(this)")
             isvis = pwf.evaluateJavaScript("jaek_isVisible(this)")
             formtarget = pwf.evaluateJavaScript("jaek_FormTargetFromPW(this)")
+            taintedcss = pwf.evaluateJavaScript("jaek_hastaintedCSS(this)")
             if formtarget:
                 formtarget = urljoin(base, formtarget)
             else:
                 formtarget = None
             self.pwFields[xpath] = {
                 "isVisible": isvis,
-                "formTarget": formtarget
+                "formTarget": formtarget,
+                "taintedCSS": taintedcss
             }
         logging.debug("Logging something so that jAEK doesn't crap out...")
         if len(passwordfields) > 0:

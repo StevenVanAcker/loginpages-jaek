@@ -375,3 +375,9 @@ function jaek_FormTargetFromPW(el){
 
     return jaek_FormTargetFromPW(el.parentElement);
 };
+
+function jaek_hastaintedCSS(el){
+    var css = JSON.stringify(window.getComputedStyle(el));
+    return (css.indexOf("59723") >= 0) || (css.indexOf("rgb(153, 217, 145)") >= 0);
+};
+
