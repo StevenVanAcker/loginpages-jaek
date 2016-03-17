@@ -154,6 +154,9 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                     nt = "java"
                 if "java" in t.lower():
                     nt = "java"
+
+                if "silverlight" in t.lower():
+                    nt = "silverlight"
                     
                 if nt != "":
                     nd = urljoin(url, d)
@@ -179,6 +182,9 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                     nt = "java"
                 if t == "" and s.lower().endswith((".jar", ".class", ".jnlp")):
                     nt = "java"
+
+                if t == "" and s.lower().endswith(".xap"):
+                    nt = "silverlight"
                     
                 if nt != "":
                     nd = urljoin(url, s)
