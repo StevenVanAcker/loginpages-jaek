@@ -176,6 +176,7 @@ class InteractionCore(QWebPage):
         pass
 
     def javaScriptAlert(self, frame, msg):
+        logging.info("[ALERT] {}".format(msg))
         pass
 
     def javaScriptConfirm(self, frame, msg):
