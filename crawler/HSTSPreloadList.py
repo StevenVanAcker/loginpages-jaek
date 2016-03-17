@@ -54,6 +54,9 @@ class HSTSPreloadList(object):
         return out
     #}}}
     def hostnameInList(self, hostname): #{{{
+        if hostname == None:
+            return False
+
         hn = hostname.lower()
 
         # check if the hostname is in the list verbatim
