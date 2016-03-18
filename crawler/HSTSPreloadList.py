@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 
-import os, urllib.request, json
-from urllib.parse import urlparse
+import sys, os, json
+if sys.version_info >= (3, 0):
+    from urllib.request import urlretrieve
+    from urllib.parse import urlparse
+else:
+    from urllib import urlretrieve
+    from urlparse import urlparse
 
 class HSTSPreloadList(object):
     def __init__(self, jsonfile=None, url=None, downloadIfNeeded=True): #{{{
@@ -21,7 +26,7 @@ class HSTSPreloadList(object):
     #}}}
     def _download(self): #{{{
         if self.jsonfile == None or not os.path.isfile(self.jsonfile):
-            (fn, _) = urllib.request.urlretrieve(self.url)
+            (fn, _) = urlretrieve(self.url)
             data = json.load(open(fn))
             realdata = data["file_info_response"][0]["file_info"]["content"]["text"]
             realdata = "\n".join([x for x in realdata.split("\n") if not (x.strip().startswith("//") or x.strip() == "")])
@@ -43,6 +48,9 @@ class HSTSPreloadList(object):
                 subs = r["include_subdomains"] if "include_subdomains" in r else False
                 out[name] = subs
             self.data = out
+    #}}}
+    def clear(self): #{{{
+        self.data = {}
     #}}}
     def getAllTopDomains(self, hostname): #{{{
         # generate a list of all domains to which this hostname is a subdomain
@@ -72,6 +80,24 @@ class HSTSPreloadList(object):
     def urlInList(self, url): #{{{
         urlparts = urlparse(url)
         return self.hostnameInList(urlparts.hostname)
+    #}}}
+    def addDomain(self, dn, subs): #{{{
+        oldsubs = False
+        if dn in self.data:
+            oldsubs = self.data[dn]
+        self.data[dn] = subs or oldsubs
+    #}}}
+    def delDomain(self, dn, subs): #{{{
+        if dn in self.data:
+            self.data.pop(dn, None)
+
+        # if subs, then delete all subdomains of the given domain too
+        if subs:
+            dotdn = "." + dn
+            dellist = [k for (k,v) in self.data.items() if ("."+k).endswith(dotdn)]
+
+            for d in dellist:
+                self.data.pop(d, None)
     #}}}
 
 if __name__ == "__main__":
