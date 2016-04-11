@@ -222,8 +222,9 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         base = data["self"].mainFrame().baseUrl().toString()
         for x in data["self"].mainFrame().findAllElements('a'):
             href = x.attribute("href", None)
+            txt = x.toPlainText()
             if href != None:
-                self.links.append(urljoin(base, href))
+                self.links.append( (urljoin(base, href), txt) )
 
         passwordfields = data["self"].mainFrame().findAllElements('input[type="password"]')
         self.pwFields = {}
