@@ -8,7 +8,6 @@ import json
 import string
 import subprocess, os, tempfile
 
-from xvfbwrapper import Xvfb
 from models.utils import CrawlSpeed
 from utils.user import User
 from utils.config import CrawlConfig
@@ -147,9 +146,6 @@ def visitPage(t, u): #{{{
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s: %(levelname)s - %(message)s')
-    vdisplay = Xvfb()
-    vdisplay.start()
-
     currentDomain = sys.argv[1].lower()
 
     if not isValidDomain(currentDomain):
@@ -299,5 +295,4 @@ if __name__ == "__main__":
 
     failDataAndExit("output.json", {"crawlurl": firstWorkingURL})
     logging.debug("prescan.py is done")
-    vdisplay.stop()
 
