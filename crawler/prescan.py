@@ -35,6 +35,7 @@ loginKeywords = [
         #"login",       "logon",        "signin",       "account",      # Turkish
 ]
 #FIXME: add different languages
+BINGSIZE = 20
 
 def urlInDomain(url, domain): #{{{
     urlparts = urlparse(url)
@@ -143,6 +144,13 @@ def visitPage(t, u): #{{{
 
     return data
 #}}}
+def bingdataFor(domain): #{{{
+    fn = "/usr/src/bingdata/{}.json".format(domain)
+    try:
+        return [k for (k,v) in json.load(open(fn)).items()][:BINGSIZE]
+    except:
+        return []
+#}}}
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s: %(levelname)s - %(message)s')
@@ -162,7 +170,7 @@ if __name__ == "__main__":
     # topURLpatterns += ["https://www.{}/?xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"+str(i) for i in range(10)]
 
     topURLs = [x.format(currentDomain) for x in topURLpatterns]
-    bingURLs = []
+    bingURLs = bingdataFor(currentDomain)
     try:
         bingURLs = json.load(open("/data/stuff.json")) # FIXME
     except:
