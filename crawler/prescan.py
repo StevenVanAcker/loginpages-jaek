@@ -97,8 +97,8 @@ def urlPrioritySort(a, b): #{{{
     return 0
 #}}}
 def saveDataAndExit(fn, data): #{{{
-    logging.info("Found a login page, bailing out. Data:")
-    logging.info(pprint.pformat(data))
+    logging.info("Found a login page at {} --> bailing out.".format(data["url"]))
+    #logging.info(pprint.pformat(data))
     json.dump(data, open(fn, "w"))
     sys.exit(0)
 #}}}
@@ -160,7 +160,6 @@ if __name__ == "__main__":
         logging.info("Invalid domain name {}".format(currentDomain))
         sys.exit(1)
 
-
     topURLpatterns = [
         "http://{}", 
         "https://{}", 
@@ -181,16 +180,20 @@ if __name__ == "__main__":
     visitedURLs = set()
 
     #### Step 1: for each toplevel URL of this domain, check if it contains a login page {{{
+    logging.debug("###########################")
+    logging.debug("########## STEP 1 #########")
+    logging.debug("###########################")
     topURLresults = []
     counter = 0
     for u in topURLs:
+        counter += 1
         if u in visitedURLs:
             logging.debug("Skipping already visited top url {}".format(u))
             continue
         visitedURLs.add(u)
 
-        logging.debug("Starting prescan of top url {}".format(counter))
-        res = visitPage("TOPURL{} {}".format(counter, topURLpatterns[counter]), u)
+        logging.debug("Starting prescan of top url {}/{}".format(counter, len(topURLs)))
+        res = visitPage("TOPURL{} {}".format(counter, topURLpatterns[counter-1]), u)
 
         if res:
             if firstWorkingURL == None:
@@ -206,9 +209,11 @@ if __name__ == "__main__":
             logging.debug("Done with prescan of top url {}: {}".format(counter, u))
         else:
             logging.debug("Failed prescan of top url {}: {}".format(counter, u))
-        counter += 1
     #}}}
     #### Step 2: if no login page is found on the toplevel URLs, look for URLs on those page containing {{{
+    logging.debug("###########################")
+    logging.debug("########## STEP 2 #########")
+    logging.debug("###########################")
     # words like login, logon, signin, ... in several languages, and check those for a login page
 
     # gather set of all unique URLs
@@ -221,14 +226,16 @@ if __name__ == "__main__":
     logging.info("Possible Loginpage URLs: ")
     logging.info(pprint.pformat(sortedURLs))
 
+    counter = 0
     for u in sortedURLs:
+        counter += 1
         if u in visitedURLs:
             logging.debug("Skipping already visited possible login url {}".format(u))
             continue
         visitedURLs.add(u)
 
-        logging.debug("Starting prescan of possible login url {}".format(u))
-        res = visitPage("LOGINURL", u)
+        logging.debug("Starting prescan of possible login url ({}/{}) {}".format(counter, len(sortedURLs), u))
+        res = visitPage("LOGINURL{}".format(counter), u)
         if res:
             logging.debug("Inspecting results for prescan of possible login url {}".format(u))
 
@@ -242,17 +249,21 @@ if __name__ == "__main__":
             logging.debug("Failed prescan of possible login url {}".format(u))
     #}}}
     #### Step 3: visit top Bing pages for this domain, check for login page {{{
+    logging.debug("###########################")
+    logging.debug("########## STEP 3 #########")
+    logging.debug("###########################")
     # remove already checked pages from the bing URL list...
     bingURLresults = []
     counter = 0
     for u in bingURLs:
+        counter += 1
         if u in visitedURLs:
             logging.debug("Skipping already visited bing url {}".format(u))
             continue
         visitedURLs.add(u)
 
-        logging.debug("Starting prescan of bing url {}".format(counter))
-        res = visitPage("BINGURL{} {}".format(counter, bingURLpatterns[counter]), u)
+        logging.debug("Starting prescan of bing url {}/{}".format(counter, len(bingURLs)))
+        res = visitPage("BINGURL{}".format(counter), u)
 
         if res:
             if firstWorkingURL == None:
@@ -268,9 +279,11 @@ if __name__ == "__main__":
             logging.debug("Done with prescan of bing url {}: {}".format(counter, u))
         else:
             logging.debug("Failed prescan of bing url {}: {}".format(counter, u))
-        counter += 1
     #}}}
     #### Step 4: visit any linked pages from top Bing pages with login keywords in them {{{
+    logging.debug("###########################")
+    logging.debug("########## STEP 4 #########")
+    logging.debug("###########################")
     # gather set of all unique URLs
     containedURLs = itertools.chain.from_iterable([x["links"] for x in bingURLresults])
     filteredURLTXTs = list(filter(lambda x: urlInDomainContainsLoginKeyword(x, currentDomain, loginKeywords), containedURLs))
@@ -281,13 +294,15 @@ if __name__ == "__main__":
     logging.info("Possible Loginpage URLs: ")
     logging.info(pprint.pformat(sortedURLs))
 
+    counter = 0
     for u in sortedURLs:
+        counter += 1
         if u in visitedURLs:
             logging.debug("Skipping already visited possible bing login url {}".format(u))
             continue
         visitedURLs.add(u)
-        logging.debug("Starting prescan of possible bing login url {}".format(u))
-        res = visitPage("BINGLOGINURL", u)
+        logging.debug("Starting prescan of possible bing login url ({}/{}) {}".format(counter, len(sortedURLs), u))
+        res = visitPage("BINGLOGINURL{}".format(counter), u)
         if res:
             logging.debug("Inspecting results for prescan of possible bing login url {}".format(u))
 
@@ -301,6 +316,9 @@ if __name__ == "__main__":
             logging.debug("Failed prescan of possible bing login url {}".format(u))
     #}}}
 
+    logging.debug("###########################")
+    logging.debug("########### DONE ##########")
+    logging.debug("###########################")
     failDataAndExit("output.json", {"crawlurl": firstWorkingURL})
     logging.debug("prescan.py is done")
 
