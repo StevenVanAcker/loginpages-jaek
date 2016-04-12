@@ -137,7 +137,9 @@ def visitPage(t, u, retry = 1): #{{{
     os.unlink(tmpin)
     os.unlink(tmpout)
 
-    if data == None:
+    logging.debug("****** RETURN CODE == {} ******".format(rc))
+
+    if data == None and rc != 0 and rc != 1:
         if retry > 0:
             logging.debug("*********************************************")
             logging.debug("****** CRASH DETECTED (TRYING {} MORE) ******".format(retry))
