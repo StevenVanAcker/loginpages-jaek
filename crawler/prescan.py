@@ -111,7 +111,7 @@ def isValidDomain(d): #{{{
     validchars = string.ascii_lowercase + string.digits + "-."
     return all(c in validchars for c in d)
 #}}}
-def visitPage(t, u): #{{{
+def visitPage(t, u, retry = 1): #{{{
     d = os.path.dirname(os.path.realpath(__file__))
     tmpinfd = tempfile.NamedTemporaryFile(delete=False)  
     tmpoutfd = tempfile.NamedTemporaryFile(delete=False)  
@@ -134,13 +134,19 @@ def visitPage(t, u): #{{{
         except:
             pass
 
-    if data == None:
-        logging.debug("*********************************************")
-        logging.debug("********** CRASH DETECTED (AGAIN) ***********")
-        logging.debug("*********************************************")
-
     os.unlink(tmpin)
     os.unlink(tmpout)
+
+    if data == None:
+        if retry > 0:
+            logging.debug("*********************************************")
+            logging.debug("****** CRASH DETECTED (TRYING {} MORE) ******".format(retry))
+            logging.debug("*********************************************")
+            data = visitPage(t, u, retry - 1)
+        else:
+            logging.debug("*********************************************")
+            logging.debug("***** CRASH DETECTED (NOT TRYING AGAIN) *****")
+            logging.debug("*********************************************")
 
     return data
 #}}}
