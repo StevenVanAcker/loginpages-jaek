@@ -164,6 +164,12 @@ class MainAnalyzer(InteractionCore):
         try:
             if timingevent['time'] != "undefined":
                 time = timingevent['time']  # millisecond
+
+                ttime = type(time)
+                if ttime != int:
+                    logging.debug("PROBLEM: capture_timeout_call({}) called with type {}".format(time, ttime))
+                    return
+
                 event_type = timingevent['type']
                 event_id = timingevent['function_id']
                 timeming_event = {"time": time, "event_type": event_type, "event_id": event_id}
