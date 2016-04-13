@@ -1,21 +1,3 @@
-'''
-Copyright (C) 2015 Constantin Tschuertz
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
-
-
 import logging, sys, json
 
 from attacker import Attacker
@@ -37,29 +19,23 @@ logging.basicConfig(level=logging.DEBUG,
                     )
 
 if __name__ == '__main__':
-    # In the Userobject, the first string you set is the name of the crawl run and also the name of the created database.
-    # So if you want to keep old runs then just give different names for each crawl
-
-
-    # The first of the line below, starts a scan with a logged in user.
-    # Parameter desc: Name of DB - Privilege level: deprecated(Just let it 0) - URL where the login form is stored - login data as dict. The key is the parameter name in the login form that has to be set -
-    # session: reflects the session within a DB. It is deprecated. Just set it to ABC
-    #user = User("WordpressX", 0, "http://localhost:8080/wp-login.php", login_data = {"log": "admin", "pwd": "admin"}, session="ABC")
-
-
-
-    url = sys.argv[1]
-    domain = sys.argv[2]
+    if len(sys.argv) == 3:
+        url = sys.argv[1]
+        domain = sys.argv[2]
+        observedAuthSchemes = {}
+        observedSSLHostPorts = {}
+    else:
+        indata = json.load(open(sys.argv[1]))
+        url = indata["url"]
+        domain = indata["domain"]
+        observedAuthSchemes = indata["observedAuthSchemes"]
+        observedSSLHostPorts = indata["observedSSLHostPorts"]
 
     dbname = domain.replace(".", "_")
 
     # Crawl without user session. Parameter desc: Name of DB - Privilege level - session
     user = User(dbname, 0, session="ABC")
-
-    # Creates the crawler config: URL: start url of the crawler(independent from login) - max_dept: how deep to crawl(link), max_click_depth: how deep to follow events - Crawlspeed: Fast is the best value here
     crawler_config = CrawlConfig("Some Name, doesn't matter", url, max_depth=3, max_click_depth=3, crawl_speed=CrawlSpeed.Fast)
-    #crawler_config = CrawlConfig("Some Name, doesn't matter", url, max_depth=2, max_click_depth=-1, crawl_speed=CrawlSpeed.Speed_of_Lightning)
-    #crawler_config = CrawlConfig("Some Name, doesn't matter", url, max_depth=2, max_click_depth=2, crawl_speed=CrawlSpeed.Fast)
 
     # From here you have nothing to chance. Except you want no attacking, then comment out the lines down
     logging.info("Crawler started...")
@@ -78,9 +54,3 @@ if __name__ == '__main__':
             json.dump(res, outfile)
     sys.exit(0)
 
-    # If you want no attacking comment out the lines below.
-###     logging.info("Start attacking...")
-###     attack_config = AttackConfig(url)
-###     attacker = Attacker(attack_config, database_manager=database_manager)#, proxy="localhost", port=8082)
-###     attacker.attack(user)
-###     logging.info("Finish attacking...")
