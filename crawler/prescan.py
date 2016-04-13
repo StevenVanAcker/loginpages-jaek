@@ -184,6 +184,8 @@ if __name__ == "__main__":
         logging.info("Invalid domain name {}".format(currentDomain))
         sys.exit(1)
 
+    logging.debug("#### PRESCAN OF DOMAIN {}".format(currentDomain))
+
     topURLpatterns = [
         "http://{}", 
         "https://{}", 
@@ -214,11 +216,11 @@ if __name__ == "__main__":
     for u in topURLs:
         counter += 1
         if u in visitedURLs:
-            logging.debug("Skipping already visited top url {}".format(u))
+            logging.debug("### Skipping already visited top url {}".format(u))
             continue
         visitedURLs.add(u)
 
-        logging.debug("Starting prescan of top url {}/{}".format(counter, len(topURLs)))
+        logging.debug("### Starting prescan of top url {}/{}".format(counter, len(topURLs)))
         res = visitPage("TOPURL{} {}".format(counter, topURLpatterns[counter-1]), u)
 
         if res:
@@ -234,9 +236,9 @@ if __name__ == "__main__":
                 saveDataAndExit("output.json", res)
 
             topURLresults.append(res)
-            logging.debug("Done with prescan of top url {}: {}".format(counter, u))
+            logging.debug("### Done with prescan of top url {}: {}".format(counter, u))
         else:
-            logging.debug("Failed prescan of top url {}: {}".format(counter, u))
+            logging.debug("### Failed prescan of top url {}: {}".format(counter, u))
     #}}}
     #### Step 2: if no login page is found on the toplevel URLs, look for URLs on those page containing {{{
     logging.debug("###########################")
@@ -258,11 +260,11 @@ if __name__ == "__main__":
     for u in sortedURLs:
         counter += 1
         if u in visitedURLs:
-            logging.debug("Skipping already visited possible login url {}".format(u))
+            logging.debug("### Skipping already visited possible login url {}".format(u))
             continue
         visitedURLs.add(u)
 
-        logging.debug("Starting prescan of possible login url ({}/{}) {}".format(counter, len(sortedURLs), u))
+        logging.debug("### Starting prescan of possible login url ({}/{}) {}".format(counter, len(sortedURLs), u))
         res = visitPage("LOGINURL{}".format(counter), u)
         if res:
             logging.debug("Inspecting results for prescan of possible login url {}".format(u))
@@ -274,9 +276,9 @@ if __name__ == "__main__":
                 visitedURLs.add(res["url"])
                 saveDataAndExit("output.json", res)
 
-            logging.debug("Done with prescan of possible login url {}".format(u))
+            logging.debug("### Done with prescan of possible login url {}".format(u))
         else:
-            logging.debug("Failed prescan of possible login url {}".format(u))
+            logging.debug("### Failed prescan of possible login url {}".format(u))
     #}}}
     #### Step 3: visit top Bing pages for this domain, check for login page {{{
     logging.debug("###########################")
@@ -288,11 +290,11 @@ if __name__ == "__main__":
     for u in bingURLs:
         counter += 1
         if u in visitedURLs:
-            logging.debug("Skipping already visited bing url {}".format(u))
+            logging.debug("### Skipping already visited bing url {}".format(u))
             continue
         visitedURLs.add(u)
 
-        logging.debug("Starting prescan of bing url {}/{}".format(counter, len(bingURLs)))
+        logging.debug("### Starting prescan of bing url {}/{}".format(counter, len(bingURLs)))
         res = visitPage("BINGURL{}".format(counter), u)
 
         if res:
@@ -308,9 +310,9 @@ if __name__ == "__main__":
                 saveDataAndExit("output.json", res)
 
             bingURLresults.append(res)
-            logging.debug("Done with prescan of bing url {}: {}".format(counter, u))
+            logging.debug("### Done with prescan of bing url {}: {}".format(counter, u))
         else:
-            logging.debug("Failed prescan of bing url {}: {}".format(counter, u))
+            logging.debug("### Failed prescan of bing url {}: {}".format(counter, u))
     #}}}
     #### Step 4: visit any linked pages from top Bing pages with login keywords in them {{{
     logging.debug("###########################")
@@ -330,10 +332,10 @@ if __name__ == "__main__":
     for u in sortedURLs:
         counter += 1
         if u in visitedURLs:
-            logging.debug("Skipping already visited possible bing login url {}".format(u))
+            logging.debug("### Skipping already visited possible bing login url {}".format(u))
             continue
         visitedURLs.add(u)
-        logging.debug("Starting prescan of possible bing login url ({}/{}) {}".format(counter, len(sortedURLs), u))
+        logging.debug("### Starting prescan of possible bing login url ({}/{}) {}".format(counter, len(sortedURLs), u))
         res = visitPage("BINGLOGINURL{}".format(counter), u)
         if res:
             logging.debug("Inspecting results for prescan of possible bing login url {}".format(u))
@@ -345,9 +347,9 @@ if __name__ == "__main__":
                 visitedURLs.add(res["url"])
                 saveDataAndExit("output.json", res)
 
-            logging.debug("Done with prescan of possible bing login url {}".format(u))
+            logging.debug("### Done with prescan of possible bing login url {}".format(u))
         else:
-            logging.debug("Failed prescan of possible bing login url {}".format(u))
+            logging.debug("### Failed prescan of possible bing login url {}".format(u))
     #}}}
 
     logging.debug("###########################")
