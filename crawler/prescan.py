@@ -36,6 +36,7 @@ loginKeywords = [
 ]
 #FIXME: add different languages
 BINGSIZE = 20
+CRAWLERTIMEOUT = 20
 
 def urlInDomain(url, domain): #{{{
     urlparts = urlparse(url)
@@ -351,10 +352,25 @@ if __name__ == "__main__":
         else:
             logging.debug("### Failed prescan of possible bing login url {}".format(u))
     #}}}
+    #### Step 5: invoke jAEk {{{
+    logging.debug("###########################")
+    logging.debug("########## STEP 5 #########")
+    logging.debug("###########################")
+
+    logging.debug("### Starting jAEk crawler on {}".format(firstWorkingURL))
+    d = os.path.dirname(os.path.realpath(__file__))
+    tmpinfd = tempfile.NamedTemporaryFile(delete=False)  
+    tmpin = tmpinfd.name
+    tmpinfd.close()
+    indata = { "url": firstWorkingURL, "domain": currentDomain, "observedAuthSchemes": observedAuthSchemes, "observedSSLHostPorts": observedSSLHostPorts }
+    json.dump(indata, open(tmpin, 'w'))
+    child = subprocess.Popen(["timeout", "--signal=9", "{}".format(CRAWLERTIMEOUT), sys.executable, d + "/main.py", tmpin])
+    child.communicate()
+    os.unlink(tmpin)
+    #}}}
 
     logging.debug("###########################")
     logging.debug("########### DONE ##########")
     logging.debug("###########################")
-    failDataAndExit("output.json", {"crawlurl": firstWorkingURL})
     logging.debug("prescan.py is done")
 
