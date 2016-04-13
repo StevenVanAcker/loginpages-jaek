@@ -36,7 +36,7 @@ loginKeywords = [
 ]
 #FIXME: add different languages
 BINGSIZE = 20
-CRAWLERTIMEOUT = 20
+CRAWLERTIMEOUT = 1800
 
 def urlInDomain(url, domain): #{{{
     urlparts = urlparse(url)
