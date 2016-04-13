@@ -245,65 +245,6 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 "taintedCSS": taintedcss
             }
         logging.debug("Logging something so that jAEK doesn't crap out...")
-        if len(passwordfields) > 0:
-            data["self"].screenshot("screenshot.png")
-
-        #logging.info("Resources:")
-        #logging.info(pprint.pformat(self.getResourceData(self.url, data["self"])))
-
-
-        # TODO main page:
-        #    check redirect chain. Do we have an HTTP hop?
-        #    <HTTPSVULN>
-        #    is the form target set to HTTPS?
-        #        the form target can not redirect through HTTP, since POST requests can not have a redirect without a HTTP 307 code which triggers user interaction
-        #        <HTTPSVULN>
-
-        # TODO for resources, form the main page:
-        #    is CSP set with upgrade-insecure-resources or block-all-mixed-content?
-        #    is HTTP upgrade-insecure-resources header set?
-        #    is SRI set?
-        
-        # TODO for each resource:
-        #    is the resource loaded over HTTP? does the redirect chain have HTTP?
-        #    <HTTPSVULN>
-
-        # "HTTPSVULN" for any HTTPS URL:
-        #    is HSTS set? what is max-age?
-        #    is the hostname on the HSTS preload list?
-        #    is the key pinned?
-        #    is the key pinned in the browser?
-
-        #    does the host have SSL vulns?
-        # https://github.com/rbsec/sslscan
-        # https://github.com/okoeroo/drssl
-        # https://github.com/nabla-c0d3/sslyze
-        # BEAST, Lucky Thirteen, BREACH, POODLE, Heartbleed, FREAK, DROWN, CRIME, LogJam
-
-        '''
-                data = {
-             X      "mainpage": [
-             X      { "url": "...",
-             X        "httpcode": None | 301,
-             X        "headers": [ ],
-             X        "sslinfo": [ ],
-             X      }]
-             X      "resources": [{
-             X        "type": ...
-             X        "sri": ...
-             X        "redirectchain": [{
-             X            "url": ...,
-             X            "httpcode": ...,
-             X            "headers": ...,
-             X            "sslinfo": ...
-             X        }]
-             X      }]
-             X      "pwfields": {
-             X          "xpath": { "isvisbile": True|False, "formtarget": None|URL }
-             X          ...
-             X      }
-                }
-        '''
 
         ####################
         # Building the information about the main page redirect chain

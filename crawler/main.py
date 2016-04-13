@@ -26,7 +26,6 @@ from models.utils import CrawlSpeed
 from utils.user import User
 import csv
 from utils.utils import calculate_similarity_between_pages
-from xvfbwrapper import Xvfb
 from afterclickshandlers import LoginPageChecker
 from HSTSPreloadList import HSTSPreloadList
 
@@ -38,10 +37,6 @@ logging.basicConfig(level=logging.DEBUG,
                     )
 
 if __name__ == '__main__':
-    vdisplay = Xvfb()
-    vdisplay.start()
-
-
     # In the Userobject, the first string you set is the name of the crawl run and also the name of the created database.
     # So if you want to keep old runs then just give different names for each crawl
 
@@ -81,4 +76,3 @@ if __name__ == '__main__':
 ###     attacker = Attacker(attack_config, database_manager=database_manager)#, proxy="localhost", port=8082)
 ###     attacker.attack(user)
 ###     logging.info("Finish attacking...")
-    vdisplay.stop()
