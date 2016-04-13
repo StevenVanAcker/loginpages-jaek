@@ -197,10 +197,6 @@ if __name__ == "__main__":
 
     topURLs = [x.format(currentDomain) for x in topURLpatterns]
     bingURLs = bingdataFor(currentDomain)
-    try:
-        bingURLs = json.load(open("/data/stuff.json")) # FIXME
-    except:
-        pass
     hstspreloadchecker = HSTSPreloadList()
 
     firstWorkingURL = None
