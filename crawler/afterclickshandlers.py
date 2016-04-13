@@ -76,7 +76,9 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             "element_to_click": self.initclick.toDict() if self.initclick != None else None,
             "pre_clicks": [x.toDict() if x != None else None for x in self.preclicks],
             "redirectPageResources": self.redirectPageResources,
-            "mainRedirectChain": self.mainRedirectChain
+            "mainRedirectChain": self.mainRedirectChain,
+            "observedAuthSchemes": self.observedAuthSchemes,
+            "observedSSLHostPorts": self.observedSSLHostPorts,
         }
 #}}}
     def getResourceData(self, url, page): #{{{
@@ -307,6 +309,37 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         # Building the information about the main page redirect chain
         ####################
         self.mainRedirectChain = self.buildNetworkTrace(self.origurl, data["self"])
+
+        ####################
+        # Detect if any out-of-band authentication was used. 
+        # For authentication in HTTP, we check www-authenticate
+        # For SSL-based authentication, we log the hostname:port and do a check afterwards
+        ####################
+
+        self.observedAuthSchemes = {}
+        self.observedSSLHostPorts = {}
+        #logging.info(pprint.pformat(self.mainRedirectChain))
+
+        for r in self.mainRedirectChain:
+            if "headers" in r:
+                h = r["headers"]
+
+                authtypes = list(set([v.split(" ")[0].lower() for (k,v) in h.items() if k.lower() == "WWW-Authenticate".lower()]))
+                for a in authtypes:
+                    if a not in self.observedAuthSchemes:
+                        self.observedAuthSchemes[a] = 0
+
+                    self.observedAuthSchemes[a] += 1
+
+            if "sslinfo" in r and "url" in r and r["sslinfo"] != None:
+                h = r["headers"]
+                urlparts = urlparse(r["url"])
+                if urlparts.scheme.lower() == "https":
+                    netloc = "{}:{}".format(urlparts.hostname, urlparts.port if urlparts.port != None else 443)
+                    if netloc not in self.observedSSLHostPorts:
+                        self.observedSSLHostPorts[netloc] = 0
+
+                    self.observedSSLHostPorts[netloc] += 1
 
         self.resultFlag = True
 #}}}

@@ -97,12 +97,16 @@ def urlPrioritySort(a, b): #{{{
     return 0
 #}}}
 def saveDataAndExit(fn, data): #{{{
+    data["observedAuthSchemes"] = observedAuthSchemes
+    data["observedSSLHostPorts"] = observedSSLHostPorts
     logging.info("Found a login page at {} --> bailing out.".format(data["url"]))
     #logging.info(pprint.pformat(data))
     json.dump(data, open(fn, "w"))
     sys.exit(0)
 #}}}
 def failDataAndExit(fn, data): #{{{
+    data["observedAuthSchemes"] = observedAuthSchemes
+    data["observedSSLHostPorts"] = observedSSLHostPorts
     logging.info("Saving prescan URL and bailing out")
     json.dump(data, open(fn, "w"))
     sys.exit(1)
@@ -159,6 +163,18 @@ def bingdataFor(domain): #{{{
     except:
         return []
 #}}}
+def logObservedAuthTypes(res): #{{{
+    if "observedAuthSchemes" in res:
+        for (k,v) in res["observedAuthSchemes"].items():
+            if k not in observedAuthSchemes:
+                observedAuthSchemes[k] = 0
+            observedAuthSchemes[k] += v
+    if "observedSSLHostPorts" in res:
+        for (k,v) in res["observedSSLHostPorts"].items():
+            if k not in observedSSLHostPorts:
+                observedSSLHostPorts[k] = 0
+            observedSSLHostPorts[k] += v
+#}}}
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s: %(levelname)s - %(message)s')
@@ -185,6 +201,8 @@ if __name__ == "__main__":
     hstspreloadchecker = HSTSPreloadList()
 
     firstWorkingURL = None
+    observedAuthSchemes = {}
+    observedSSLHostPorts = {}
     visitedURLs = set()
 
     #### Step 1: for each toplevel URL of this domain, check if it contains a login page {{{
@@ -207,6 +225,8 @@ if __name__ == "__main__":
             if firstWorkingURL == None:
                 firstWorkingURL = u
             logging.debug("Inspecting results for prescan of top url {}: {}".format(counter, u))
+
+            logObservedAuthTypes(res)
 
             # if we found a login page, save data and bail out right now
             if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
@@ -247,6 +267,8 @@ if __name__ == "__main__":
         if res:
             logging.debug("Inspecting results for prescan of possible login url {}".format(u))
 
+            logObservedAuthTypes(res)
+
             # if we found a login page, save data and bail out right now
             if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
                 visitedURLs.add(res["url"])
@@ -277,6 +299,8 @@ if __name__ == "__main__":
             if firstWorkingURL == None:
                 firstWorkingURL = u
             logging.debug("Inspecting results for prescan of bing url {}: {}".format(counter, u))
+
+            logObservedAuthTypes(res)
 
             # if we found a login page, save data and bail out right now
             if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
@@ -313,6 +337,8 @@ if __name__ == "__main__":
         res = visitPage("BINGLOGINURL{}".format(counter), u)
         if res:
             logging.debug("Inspecting results for prescan of possible bing login url {}".format(u))
+
+            logObservedAuthTypes(res)
 
             # if we found a login page, save data and bail out right now
             if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
