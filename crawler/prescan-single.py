@@ -13,12 +13,19 @@ from HSTSPreloadList import HSTSPreloadList
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s: %(levelname)s - %(message)s')
 
-inputfile = sys.argv[1]
-outputfile = sys.argv[2]
+if len(sys.argv) == 3:
+    inputfile = sys.argv[1]
+    outputfile = sys.argv[2]
+    inputdata = json.load(open(inputfile))
+else:
+    inputdata = {
+        "url": sys.argv[1],
+        "type": "TEST"
+    }
+    outputfile = "output.json"
+
 
 hstspreloadchecker = HSTSPreloadList()
-
-inputdata = json.load(open(sys.argv[1]))
 
 xxx = LoginPageChecker(inputdata["type"], inputdata["url"], hstspreloadchecker)
 rep = Replayer(afterClicksHandler=xxx)
