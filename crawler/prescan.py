@@ -364,6 +364,8 @@ if __name__ == "__main__":
     tmpinfd.close()
     indata = { "url": firstWorkingURL, "domain": currentDomain, "observedAuthSchemes": observedAuthSchemes, "observedSSLHostPorts": observedSSLHostPorts }
     json.dump(indata, open(tmpin, 'w'))
+    if os.path.exists("output.json"):
+        os.unlink("output.json")
     child = subprocess.Popen(["timeout", "--signal=9", "{}".format(CRAWLERTIMEOUT), sys.executable, d + "/main.py", tmpin])
     child.communicate()
     os.unlink(tmpin)
