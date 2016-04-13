@@ -39,13 +39,13 @@ class BaseAfterClicksHandler(object): #{{{
 
 
 class LoginPageChecker(BaseAfterClicksHandler): #{{{
-    def __init__(self, srctype, origurl, hstspreloadchecker, autoExitFilename = None): #{{{
+    def __init__(self, srctype, origurl, hstspreloadchecker, autoExitFilename = None, observedAuthSchemes = {}, observedSSLHostPorts = {}): #{{{
         self.links = []
         self.srctype = srctype
         self.HSTSPreloadListChecker = hstspreloadchecker
         self.autoExitFilename = autoExitFilename
-        self.observedAuthSchemes = {}
-        self.observedSSLHostPorts = {}
+        self.observedAuthSchemes = observedAuthSchemes
+        self.observedSSLHostPorts = observedSSLHostPorts
 
         # toplevel URLs that have no path (e.g. http://test.com)
         # should be converted to end in / (http://test.com/)
