@@ -39,10 +39,13 @@ class BaseAfterClicksHandler(object): #{{{
 
 
 class LoginPageChecker(BaseAfterClicksHandler): #{{{
-    def __init__(self, srctype, origurl, hstspreloadchecker): #{{{
+    def __init__(self, srctype, origurl, hstspreloadchecker, autoExitFilename = None): #{{{
         self.links = []
         self.srctype = srctype
         self.HSTSPreloadListChecker = hstspreloadchecker
+        self.autoExitFilename = autoExitFilename
+        self.observedAuthSchemes = {}
+        self.observedSSLHostPorts = {}
 
         # toplevel URLs that have no path (e.g. http://test.com)
         # should be converted to end in / (http://test.com/)
@@ -257,23 +260,19 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         # For SSL-based authentication, we log the hostname:port and do a check afterwards
         ####################
 
-        self.observedAuthSchemes = {}
-        self.observedSSLHostPorts = {}
-        #logging.info(pprint.pformat(self.mainRedirectChain))
-
         for r in self.mainRedirectChain:
-            if "headers" in r:
+            if "headers" in r and "url" in r and r["headers"] != None:
                 h = r["headers"]
 
                 authtypes = list(set([v.split(" ")[0].lower() for (k,v) in h.items() if k.lower() == "WWW-Authenticate".lower()]))
                 for a in authtypes:
+                    logging.debug("AuthType {} by {}".format(a, r["url"]))
                     if a not in self.observedAuthSchemes:
                         self.observedAuthSchemes[a] = 0
 
                     self.observedAuthSchemes[a] += 1
 
             if "sslinfo" in r and "url" in r and r["sslinfo"] != None:
-                h = r["headers"]
                 urlparts = urlparse(r["url"])
                 if urlparts.scheme.lower() == "https":
                     netloc = "{}:{}".format(urlparts.hostname, urlparts.port if urlparts.port != None else 443)
@@ -281,6 +280,18 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                         self.observedSSLHostPorts[netloc] = 0
 
                     self.observedSSLHostPorts[netloc] += 1
+
+        #logging.info(pprint.pformat(self.observedSSLHostPorts))
+
+        if len(passwordfields) > 0 and self.autoExitFilename != None:
+            data["self"].screenshot("screenshot.png")
+            if self.hasResult():
+                res = self.getResult()
+                res["observedAuthSchemes"] = self.observedAuthSchemes
+                res["observedSSLHostPorts"] = self.observedSSLHostPorts
+                with open(self.autoExitFilename, 'w') as outfile:
+                    json.dump(res, outfile)
+                sys.exit(0)
 
         self.resultFlag = True
 #}}}

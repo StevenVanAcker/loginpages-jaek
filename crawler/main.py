@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
 
-import logging, sys
+import logging, sys, json
 
 from attacker import Attacker
 from crawler import Crawler
@@ -65,10 +65,18 @@ if __name__ == '__main__':
     logging.info("Crawler started...")
     database_manager = DatabaseManager(user, dropping=True)
     hstspreloadchecker = HSTSPreloadList()
-    xxx = LoginPageChecker("CRAWL", None, hstspreloadchecker)
+    xxx = LoginPageChecker("CRAWL", None, hstspreloadchecker, autoExitFilename = "output.json")
     crawler = Crawler(crawl_config=crawler_config, database_manager=database_manager, afterClicksHandler=xxx)#, proxy="localhost", port=8082)
     crawler.crawl(user)
     logging.info("Crawler finished")
+
+    if xxx.hasResult():
+        res = xxx.getResult()
+        res["observedAuthSchemes"] = xxx.observedAuthSchemes
+        res["observedSSLHostPorts"] = xxx.observedSSLHostPorts
+        with open(xxx.autoExitFilename, 'w') as outfile:
+            json.dump(res, outfile)
+    sys.exit(0)
 
     # If you want no attacking comment out the lines below.
 ###     logging.info("Start attacking...")
