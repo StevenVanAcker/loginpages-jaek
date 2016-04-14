@@ -373,6 +373,12 @@ if __name__ == "__main__":
 
         child = subprocess.Popen(["timeout", "--signal=9", "{}".format(CRAWLERTIMEOUT), sys.executable, d + "/main.py", tmpin])
         child.communicate()
+        rc = child.returncode
+        if rc != 0:
+            logging.debug("#### jAEk failed with code {}".format(rc))
+        else:
+            logging.debug("#### jAEk succeeded")
+
         os.unlink(tmpin)
         if os.path.exists("similarities"):
             shutil.rmtree("similarities")
