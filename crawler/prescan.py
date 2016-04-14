@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 import itertools
 import json
 import string
-import subprocess, os, tempfile
+import subprocess, os, tempfile, shutil
 
 from models.utils import CrawlSpeed
 from utils.user import User
@@ -37,6 +37,11 @@ loginKeywords = [
 #FIXME: add different languages
 BINGSIZE = 20
 CRAWLERTIMEOUT = 1800
+skipStep1 = False
+skipStep2 = False
+skipStep3 = False
+skipStep4 = False
+skipStep5 = False
 
 def urlInDomain(url, domain): #{{{
     urlparts = urlparse(url)
@@ -193,7 +198,6 @@ if __name__ == "__main__":
         "http://www.{}", 
         "https://www.{}", 
     ]
-    # topURLpatterns += ["https://www.{}/?xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"+str(i) for i in range(10)]
 
     topURLs = [x.format(currentDomain) for x in topURLpatterns]
     bingURLs = bingdataFor(currentDomain)
@@ -205,166 +209,180 @@ if __name__ == "__main__":
     visitedURLs = set()
 
     #### Step 1: for each toplevel URL of this domain, check if it contains a login page {{{
-    logging.debug("###########################")
-    logging.debug("########## STEP 1 #########")
-    logging.debug("###########################")
     topURLresults = []
-    counter = 0
-    for u in topURLs:
-        counter += 1
-        if u in visitedURLs:
-            logging.debug("### Skipping already visited top url {}".format(u))
-            continue
-        visitedURLs.add(u)
+    if not skipStep1:
+        logging.debug("###########################")
+        logging.debug("########## STEP 1 #########")
+        logging.debug("###########################")
+        counter = 0
+        for u in topURLs:
+            counter += 1
+            if u in visitedURLs:
+                logging.debug("### Skipping already visited top url {}".format(u))
+                continue
+            visitedURLs.add(u)
 
-        logging.debug("### Starting prescan of top url {}/{}".format(counter, len(topURLs)))
-        res = visitPage("TOPURL{} {}".format(counter, topURLpatterns[counter-1]), u)
+            logging.debug("### Starting prescan of top url {}/{}".format(counter, len(topURLs)))
+            res = visitPage("TOPURL{} {}".format(counter, topURLpatterns[counter-1]), u)
 
-        if res:
-            if firstWorkingURL == None:
-                firstWorkingURL = u
-            logging.debug("Inspecting results for prescan of top url {}: {}".format(counter, u))
+            if res:
+                if firstWorkingURL == None:
+                    firstWorkingURL = u
+                logging.debug("Inspecting results for prescan of top url {}: {}".format(counter, u))
 
-            logObservedAuthTypes(res)
+                logObservedAuthTypes(res)
 
-            # if we found a login page, save data and bail out right now
-            if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                visitedURLs.add(res["url"])
-                saveDataAndExit("output.json", res)
+                # if we found a login page, save data and bail out right now
+                if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
+                    visitedURLs.add(res["url"])
+                    saveDataAndExit("output.json", res)
 
-            topURLresults.append(res)
-            logging.debug("### Done with prescan of top url {}: {}".format(counter, u))
-        else:
-            logging.debug("### Failed prescan of top url {}: {}".format(counter, u))
+                topURLresults.append(res)
+                logging.debug("### Done with prescan of top url {}: {}".format(counter, u))
+            else:
+                logging.debug("### Failed prescan of top url {}: {}".format(counter, u))
+    else:
+        firstWorkingURL = "http://{}".format(currentDomain)
     #}}}
     #### Step 2: if no login page is found on the toplevel URLs, look for URLs on those page containing {{{
-    logging.debug("###########################")
-    logging.debug("########## STEP 2 #########")
-    logging.debug("###########################")
-    # words like login, logon, signin, ... in several languages, and check those for a login page
+    if not skipStep2:
+        logging.debug("###########################")
+        logging.debug("########## STEP 2 #########")
+        logging.debug("###########################")
+        # words like login, logon, signin, ... in several languages, and check those for a login page
 
-    # gather set of all unique URLs
-    containedURLs = itertools.chain.from_iterable([x["links"] for x in topURLresults])
-    filteredURLTXTs = list(filter(lambda x: urlInDomainContainsLoginKeyword(x, currentDomain, loginKeywords), containedURLs))
-    filteredURLs = list(set([u for (u,t) in filteredURLTXTs]))
+        # gather set of all unique URLs
+        containedURLs = itertools.chain.from_iterable([x["links"] for x in topURLresults])
+        filteredURLTXTs = list(filter(lambda x: urlInDomainContainsLoginKeyword(x, currentDomain, loginKeywords), containedURLs))
+        filteredURLs = list(set([u for (u,t) in filteredURLTXTs]))
 
-    # sort the list by priority
-    sortedURLs = sorted(filteredURLs, key=cmp_to_key(urlPrioritySort))
-    logging.info("Possible Loginpage URLs: ")
-    logging.info(pprint.pformat(sortedURLs))
+        # sort the list by priority
+        sortedURLs = sorted(filteredURLs, key=cmp_to_key(urlPrioritySort))
+        logging.info("Possible Loginpage URLs: ")
+        logging.info(pprint.pformat(sortedURLs))
 
-    counter = 0
-    for u in sortedURLs:
-        counter += 1
-        if u in visitedURLs:
-            logging.debug("### Skipping already visited possible login url {}".format(u))
-            continue
-        visitedURLs.add(u)
+        counter = 0
+        for u in sortedURLs:
+            counter += 1
+            if u in visitedURLs:
+                logging.debug("### Skipping already visited possible login url {}".format(u))
+                continue
+            visitedURLs.add(u)
 
-        logging.debug("### Starting prescan of possible login url ({}/{}) {}".format(counter, len(sortedURLs), u))
-        res = visitPage("LOGINURL{}".format(counter), u)
-        if res:
-            logging.debug("Inspecting results for prescan of possible login url {}".format(u))
+            logging.debug("### Starting prescan of possible login url ({}/{}) {}".format(counter, len(sortedURLs), u))
+            res = visitPage("LOGINURL{}".format(counter), u)
+            if res:
+                logging.debug("Inspecting results for prescan of possible login url {}".format(u))
 
-            logObservedAuthTypes(res)
+                logObservedAuthTypes(res)
 
-            # if we found a login page, save data and bail out right now
-            if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                visitedURLs.add(res["url"])
-                saveDataAndExit("output.json", res)
+                # if we found a login page, save data and bail out right now
+                if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
+                    visitedURLs.add(res["url"])
+                    saveDataAndExit("output.json", res)
 
-            logging.debug("### Done with prescan of possible login url {}".format(u))
-        else:
-            logging.debug("### Failed prescan of possible login url {}".format(u))
+                logging.debug("### Done with prescan of possible login url {}".format(u))
+            else:
+                logging.debug("### Failed prescan of possible login url {}".format(u))
     #}}}
     #### Step 3: visit top Bing pages for this domain, check for login page {{{
-    logging.debug("###########################")
-    logging.debug("########## STEP 3 #########")
-    logging.debug("###########################")
-    # remove already checked pages from the bing URL list...
     bingURLresults = []
-    counter = 0
-    for u in bingURLs:
-        counter += 1
-        if u in visitedURLs:
-            logging.debug("### Skipping already visited bing url {}".format(u))
-            continue
-        visitedURLs.add(u)
+    if not skipStep3:
+        logging.debug("###########################")
+        logging.debug("########## STEP 3 #########")
+        logging.debug("###########################")
+        # remove already checked pages from the bing URL list...
+        counter = 0
+        for u in bingURLs:
+            counter += 1
+            if u in visitedURLs:
+                logging.debug("### Skipping already visited bing url {}".format(u))
+                continue
+            visitedURLs.add(u)
 
-        logging.debug("### Starting prescan of bing url {}/{}".format(counter, len(bingURLs)))
-        res = visitPage("BINGURL{}".format(counter), u)
+            logging.debug("### Starting prescan of bing url {}/{}".format(counter, len(bingURLs)))
+            res = visitPage("BINGURL{}".format(counter), u)
 
-        if res:
-            if firstWorkingURL == None:
-                firstWorkingURL = u
-            logging.debug("Inspecting results for prescan of bing url {}: {}".format(counter, u))
+            if res:
+                if firstWorkingURL == None:
+                    firstWorkingURL = u
+                logging.debug("Inspecting results for prescan of bing url {}: {}".format(counter, u))
 
-            logObservedAuthTypes(res)
+                logObservedAuthTypes(res)
 
-            # if we found a login page, save data and bail out right now
-            if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                visitedURLs.add(res["url"])
-                saveDataAndExit("output.json", res)
+                # if we found a login page, save data and bail out right now
+                if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
+                    visitedURLs.add(res["url"])
+                    saveDataAndExit("output.json", res)
 
-            bingURLresults.append(res)
-            logging.debug("### Done with prescan of bing url {}: {}".format(counter, u))
-        else:
-            logging.debug("### Failed prescan of bing url {}: {}".format(counter, u))
+                bingURLresults.append(res)
+                logging.debug("### Done with prescan of bing url {}: {}".format(counter, u))
+            else:
+                logging.debug("### Failed prescan of bing url {}: {}".format(counter, u))
     #}}}
     #### Step 4: visit any linked pages from top Bing pages with login keywords in them {{{
-    logging.debug("###########################")
-    logging.debug("########## STEP 4 #########")
-    logging.debug("###########################")
-    # gather set of all unique URLs
-    containedURLs = itertools.chain.from_iterable([x["links"] for x in bingURLresults])
-    filteredURLTXTs = list(filter(lambda x: urlInDomainContainsLoginKeyword(x, currentDomain, loginKeywords), containedURLs))
-    filteredURLs = list(set([u for (u,t) in filteredURLTXTs]))
+    if not skipStep4:
+        logging.debug("###########################")
+        logging.debug("########## STEP 4 #########")
+        logging.debug("###########################")
+        # gather set of all unique URLs
+        containedURLs = itertools.chain.from_iterable([x["links"] for x in bingURLresults])
+        filteredURLTXTs = list(filter(lambda x: urlInDomainContainsLoginKeyword(x, currentDomain, loginKeywords), containedURLs))
+        filteredURLs = list(set([u for (u,t) in filteredURLTXTs]))
 
-    # sort the list by priority
-    sortedURLs = sorted(filteredURLs, key=cmp_to_key(urlPrioritySort))
-    logging.info("Possible Loginpage URLs: ")
-    logging.info(pprint.pformat(sortedURLs))
+        # sort the list by priority
+        sortedURLs = sorted(filteredURLs, key=cmp_to_key(urlPrioritySort))
+        logging.info("Possible Loginpage URLs: ")
+        logging.info(pprint.pformat(sortedURLs))
 
-    counter = 0
-    for u in sortedURLs:
-        counter += 1
-        if u in visitedURLs:
-            logging.debug("### Skipping already visited possible bing login url {}".format(u))
-            continue
-        visitedURLs.add(u)
-        logging.debug("### Starting prescan of possible bing login url ({}/{}) {}".format(counter, len(sortedURLs), u))
-        res = visitPage("BINGLOGINURL{}".format(counter), u)
-        if res:
-            logging.debug("Inspecting results for prescan of possible bing login url {}".format(u))
+        counter = 0
+        for u in sortedURLs:
+            counter += 1
+            if u in visitedURLs:
+                logging.debug("### Skipping already visited possible bing login url {}".format(u))
+                continue
+            visitedURLs.add(u)
+            logging.debug("### Starting prescan of possible bing login url ({}/{}) {}".format(counter, len(sortedURLs), u))
+            res = visitPage("BINGLOGINURL{}".format(counter), u)
+            if res:
+                logging.debug("Inspecting results for prescan of possible bing login url {}".format(u))
 
-            logObservedAuthTypes(res)
+                logObservedAuthTypes(res)
 
-            # if we found a login page, save data and bail out right now
-            if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                visitedURLs.add(res["url"])
-                saveDataAndExit("output.json", res)
+                # if we found a login page, save data and bail out right now
+                if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
+                    visitedURLs.add(res["url"])
+                    saveDataAndExit("output.json", res)
 
-            logging.debug("### Done with prescan of possible bing login url {}".format(u))
-        else:
-            logging.debug("### Failed prescan of possible bing login url {}".format(u))
+                logging.debug("### Done with prescan of possible bing login url {}".format(u))
+            else:
+                logging.debug("### Failed prescan of possible bing login url {}".format(u))
     #}}}
     #### Step 5: invoke jAEk {{{
-    logging.debug("###########################")
-    logging.debug("########## STEP 5 #########")
-    logging.debug("###########################")
+    if not skipStep5:
+        logging.debug("###########################")
+        logging.debug("########## STEP 5 #########")
+        logging.debug("###########################")
 
-    logging.debug("### Starting jAEk crawler on {}".format(firstWorkingURL))
-    d = os.path.dirname(os.path.realpath(__file__))
-    tmpinfd = tempfile.NamedTemporaryFile(delete=False)  
-    tmpin = tmpinfd.name
-    tmpinfd.close()
-    indata = { "url": firstWorkingURL, "domain": currentDomain, "observedAuthSchemes": observedAuthSchemes, "observedSSLHostPorts": observedSSLHostPorts }
-    json.dump(indata, open(tmpin, 'w'))
-    if os.path.exists("output.json"):
-        os.unlink("output.json")
-    child = subprocess.Popen(["timeout", "--signal=9", "{}".format(CRAWLERTIMEOUT), sys.executable, d + "/main.py", tmpin])
-    child.communicate()
-    os.unlink(tmpin)
+        logging.debug("### Starting jAEk crawler on {}".format(firstWorkingURL))
+        d = os.path.dirname(os.path.realpath(__file__))
+        tmpinfd = tempfile.NamedTemporaryFile(delete=False)  
+        tmpin = tmpinfd.name
+        tmpinfd.close()
+        indata = { "url": firstWorkingURL, "domain": currentDomain, "observedAuthSchemes": observedAuthSchemes, "observedSSLHostPorts": observedSSLHostPorts }
+        json.dump(indata, open(tmpin, 'w'))
+
+        if os.path.exists("output.json"):
+            os.unlink("output.json")
+        if os.path.exists("similarities"):
+            shutil.rmtree("similarities")
+        os.mkdir("similarities")
+
+        child = subprocess.Popen(["timeout", "--signal=9", "{}".format(CRAWLERTIMEOUT), sys.executable, d + "/main.py", tmpin])
+        child.communicate()
+        os.unlink(tmpin)
+        if os.path.exists("similarities"):
+            shutil.rmtree("similarities")
     #}}}
 
     logging.debug("###########################")
