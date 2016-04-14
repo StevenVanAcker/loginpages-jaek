@@ -9,7 +9,6 @@ from PyQt5.QtCore import QSize, QUrl
 from core.eventexecutor import EventExecutor, XHRBehavior, EventResult
 from core.jaekcore import JaekCore
 from utils.myrequestor import MyRequestor
-from xvfbwrapper import Xvfb
 from models.utils import CrawlSpeed
 from models.webpage import WebPage
 
@@ -48,8 +47,6 @@ class Replayer(JaekCore):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s: %(levelname)s - %(message)s')
-    vdisplay = Xvfb()
-    vdisplay.start()
        
     sst = ScreenshotTaker()
     url, initclick, preclicks = sst.loadData(sys.argv[1]) # This is ugly, unserializing data should not happen in afterClicksHandlers
@@ -60,6 +57,4 @@ if __name__ == "__main__":
 
     rep = Replayer(afterClicksHandler=sst)
     rep.replay(url, initclick, preclicks)
-
-    vdisplay.stop()
 

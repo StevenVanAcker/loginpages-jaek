@@ -7,8 +7,6 @@ from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
 
 from urllib.parse import urljoin
 
-from xvfbwrapper import Xvfb
-
 class RedirectLoggerNetworkAccessManager(QNetworkAccessManager):
     def __init__(self):
         QNetworkAccessManager.__init__(self)
@@ -85,8 +83,6 @@ if __name__ == "__main__":
 
     url = sys.argv[1]
 
-    vdisplay = Xvfb()
-    vdisplay.start()
     app = QApplication(sys.argv)
 
 
@@ -104,5 +100,4 @@ if __name__ == "__main__":
 
     app.exec_()
     #print("Exiting")
-    vdisplay.stop()
 

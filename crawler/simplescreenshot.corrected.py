@@ -9,8 +9,6 @@ from PyQt5.QtWebKitWidgets import QWebView
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkProxy
 
 
-from xvfbwrapper import Xvfb
-
 globTimeout = 5
 
 class MyNetworkAccessManager(QNetworkAccessManager):
@@ -74,8 +72,6 @@ class Screenshot(QWebView):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s: %(levelname)s - %(message)s')
-    vdisplay = Xvfb()
-    vdisplay.start()
     app = QApplication(sys.argv)
 
     if len(sys.argv) < 2:
@@ -89,5 +85,4 @@ if __name__ == "__main__":
     s.capture(sys.argv[1], 'website.png')
 
     app.exec_()
-    vdisplay.stop()
 
