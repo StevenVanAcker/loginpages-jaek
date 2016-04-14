@@ -283,9 +283,9 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
         #logging.info(pprint.pformat(self.observedSSLHostPorts))
 
-        if len(passwordfields) > 0 and self.autoExitFilename != None:
+        if len(passwordfields) > 0:
             data["self"].screenshot("screenshot.png")
-            if self.hasResult():
+            if self.hasResult() and self.autoExitFilename != None:
                 res = self.getResult()
                 res["observedAuthSchemes"] = self.observedAuthSchemes
                 res["observedSSLHostPorts"] = self.observedSSLHostPorts
