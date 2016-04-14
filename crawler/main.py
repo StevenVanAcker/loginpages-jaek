@@ -50,6 +50,9 @@ if __name__ == '__main__':
         res = xxx.getResult()
         res["observedAuthSchemes"] = xxx.observedAuthSchemes
         res["observedSSLHostPorts"] = xxx.observedSSLHostPorts
+        # these will be bogus when running jAEk because it doesn't reset the arrays on every page
+        res["redirectPageResources"] = None
+        res["links"] = None
         with open(xxx.autoExitFilename, 'w') as outfile:
             json.dump(res, outfile)
     sys.exit(0)

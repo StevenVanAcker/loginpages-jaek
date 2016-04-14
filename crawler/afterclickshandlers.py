@@ -289,6 +289,9 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 res = self.getResult()
                 res["observedAuthSchemes"] = self.observedAuthSchemes
                 res["observedSSLHostPorts"] = self.observedSSLHostPorts
+                # these will be bogus when running jAEk because it doesn't reset the arrays on every page
+                res["redirectPageResources"] = None
+                res["links"] = None
                 with open(self.autoExitFilename, 'w') as outfile:
                     json.dump(res, outfile)
                 sys.exit(0)
