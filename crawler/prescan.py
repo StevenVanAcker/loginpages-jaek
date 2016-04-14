@@ -22,7 +22,6 @@ from HSTSPreloadList import HSTSPreloadList
 
 loginKeywords = [
         "login",        "logon",        "signin",       "account",      # English
-"wechall",
         #"login",       "logon",        "signin",       "account",      # Russian
         "anmeldung",    "einloggen",    "anmelden",     "konto",        # German
         #"login",       "logon",        "signin",       "account",      # Japanese
