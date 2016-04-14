@@ -176,7 +176,12 @@ def logObservedAuthTypes(res): #{{{
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s: %(levelname)s - %(message)s')
-    currentDomain = sys.argv[1].lower()
+
+    if len(sys.argv) > 1:
+        currentDomain = sys.argv[1].lower()
+    else:
+        indata = json.load(open("input.json"))
+        currentDomain = indata["domain"].lower()
 
     if not isValidDomain(currentDomain):
         logging.info("Invalid domain name {}".format(currentDomain))
