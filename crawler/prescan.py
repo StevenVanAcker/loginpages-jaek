@@ -37,11 +37,11 @@ loginKeywords = [
 #FIXME: add different languages
 BINGSIZE = 20
 CRAWLERTIMEOUT = 1800
-skipStep1 = False
-skipStep2 = False
-skipStep3 = False
-skipStep4 = False
-skipStep5 = False
+skipStep1 = True and False
+skipStep2 = True and False
+skipStep3 = True and False
+skipStep4 = True and False
+skipStep5 = True and False
 
 def urlInDomain(url, domain): #{{{
     urlparts = urlparse(url)
@@ -109,13 +109,6 @@ def saveDataAndExit(fn, data): #{{{
     #logging.info(pprint.pformat(data))
     json.dump(data, open(fn, "w"))
     sys.exit(0)
-#}}}
-def failDataAndExit(fn, data): #{{{
-    data["observedAuthSchemes"] = observedAuthSchemes
-    data["observedSSLHostPorts"] = observedSSLHostPorts
-    logging.info("Saving prescan URL and bailing out")
-    json.dump(data, open(fn, "w"))
-    sys.exit(1)
 #}}}
 def isValidDomain(d): #{{{
     validchars = string.ascii_lowercase + string.digits + "-."
