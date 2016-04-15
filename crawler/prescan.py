@@ -104,7 +104,12 @@ def urlPrioritySort(a, b): #{{{
 def saveDataAndExit(fn, data): #{{{
     data["observedAuthSchemes"] = observedAuthSchemes
     data["observedSSLHostPorts"] = observedSSLHostPorts
-    logging.info("Found a login page at {} --> bailing out.".format(data["url"]))
+    if "success" not in data:
+        data["success"] = False
+    if data["success"]:
+        logging.info("Found a login page at {} --> bailing out.".format(data["url"]))
+    else:
+        logging.info("Failed to find a login page --> bailing out.")
     #logging.info(pprint.pformat(data))
     json.dump(data, open(fn, "w"))
     sys.exit(0)
@@ -382,6 +387,14 @@ if __name__ == "__main__":
             logging.debug("#### jAEk failed with code {}".format(rc))
         else:
             logging.debug("#### jAEk succeeded")
+
+        # save the data from jAEk if it exists
+        outdata = None
+        try:
+            outdata = json.load(open("output.json"))
+        except:
+            pass
+        saveDataAndExit("output.json", outdata)
 
         os.unlink(tmpin)
         if os.path.exists("similarities"):

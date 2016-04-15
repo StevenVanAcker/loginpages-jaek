@@ -82,6 +82,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             "mainRedirectChain": self.mainRedirectChain,
             "observedAuthSchemes": self.observedAuthSchemes,
             "observedSSLHostPorts": self.observedSSLHostPorts,
+	    "success": True
         }
 #}}}
     def getResourceData(self, url, page): #{{{
