@@ -21,19 +21,24 @@ from HSTSPreloadList import HSTSPreloadList
 # perform a check on a domain for a login page, without involving the jAEk crawler itself
 
 loginKeywords = [
-        "login",        "logon",        "signin",       "account",      # English
-        #"login",       "logon",        "signin",       "account",      # Russian
-        "anmeldung",    "einloggen",    "anmelden",     "konto",        # German
-        #"login",       "logon",        "signin",       "account",      # Japanese
-        #"login",       "logon",        "signin",       "account",      # Spanish
-        #"login",       "logon",        "signin",       "account",      # French
-        #"login",       "logon",        "signin",       "account",      # Portuguese
-        #"login",       "logon",        "signin",       "account",      # Italian
-        #"login",       "logon",        "signin",       "account",      # Chinese
-        #"login",       "logon",        "signin",       "account",      # Polish
-        #"login",       "logon",        "signin",       "account",      # Turkish
+"account", "identification", "identify", "login", "logon", "password", "signin", "username",                    # English
+"akkaunt", "avtorizatsiya", "avtorizirovatsya", "parol", "vhod", "voidite", "voiti",                            # Russian
+"anmelden", "anmeldung", "einloggen", "konto",                                                                  # German
+"hairu", "passwado",                                                                                            # Japanese
+"accede", "acceso", "contrasena", "cuenta", "entra", "ingresa", "ingreso", "nombredeusuario", "usuario",        # Spanish
+"acces", "compte", "connecter", "connexion", "email", "espaceperso", "identifiant", "identifier", "mapage",
+"meconnecter", "midentifier", "moncompte", "seconnecter", "sidentifier",                                        # French
+"assinarem", "conta", "identificacao", "identificar", "nomedeusuario", "senha",                                 # Portuguese
+"accedi", "accesso", "chiavedaccesso", "connetti", "datidaccesso", "fammientrare", "frasedaccesso", 
+"nomeutente", "parolachiave", "registra", "userid", "utente",                                                   # Italian
+"denglu", "jianding", "mima", "qiandao", "shibie", "yonhuming", "zhanghu",                                      # Chinese
+"adresemail", "akceptujeregulamin", "aktywacja", "aktywuj", "bezpieczenstwo", "dalej", "dostep", "haslo",
+"identyfikator", "logowanie", "nazwauzytkownika", "niepamietamhasla", "połacz", "politykaprywatnosci",
+"przegladarka", "przypomnijhaslo", "regulamin", "serwis", "utworzkonto", "uzytkownik", "wejdz", "weryfikacja", 
+"zaakceptujregulamin", "zaloguj", "zarejestruj",                                                                # Polish
+"belirlemek", "hesap", "kimlik", "kullaniciadi", "oturum", "parola",                                            # Turkish
 ]
-#FIXME: add different languages
+
 BINGSIZE = 20
 CRAWLERTIMEOUT = 1800
 skipStep1 = True and False
