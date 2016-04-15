@@ -188,6 +188,9 @@ if __name__ == "__main__":
         indata = json.load(open("input.json"))
         currentDomain = indata["domain"].lower()
 
+    with open("output.json", "w") as fp:
+        json.dump({"success": False}, fp)
+
     if not isValidDomain(currentDomain):
         logging.info("Invalid domain name {}".format(currentDomain))
         sys.exit(1)
@@ -374,8 +377,8 @@ if __name__ == "__main__":
         indata = { "url": firstWorkingURL, "domain": currentDomain, "observedAuthSchemes": observedAuthSchemes, "observedSSLHostPorts": observedSSLHostPorts }
         json.dump(indata, open(tmpin, 'w'))
 
-        if os.path.exists("output.json"):
-            os.unlink("output.json")
+        if os.path.exists("output-jaek.json"):
+            os.unlink("output-jaek.json")
         if os.path.exists("similarities"):
             shutil.rmtree("similarities")
         os.mkdir("similarities")
@@ -389,9 +392,9 @@ if __name__ == "__main__":
             logging.debug("#### jAEk succeeded")
 
         # save the data from jAEk if it exists
-        outdata = None
         try:
-            outdata = json.load(open("output.json"))
+            outdata = json.load(open("output-jaek.json"))
+            os.unlink("output-jaek.json")
         except:
             pass
         saveDataAndExit("output.json", outdata)
