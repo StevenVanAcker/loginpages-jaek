@@ -27,7 +27,7 @@ else:
 
 hstspreloadchecker = HSTSPreloadList()
 
-xxx = LoginPageChecker(inputdata["type"], inputdata["url"], hstspreloadchecker)
+xxx = LoginPageChecker(inputdata["type"], inputdata["url"], hstspreloadchecker, domain = inputdata["domain"])
 rep = Replayer(afterClicksHandler=xxx)
 rep.replay(inputdata["url"], None, [])
 if xxx.hasResult():

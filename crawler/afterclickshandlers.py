@@ -39,9 +39,10 @@ class BaseAfterClicksHandler(object): #{{{
 
 
 class LoginPageChecker(BaseAfterClicksHandler): #{{{
-    def __init__(self, srctype, origurl, hstspreloadchecker, autoExitFilename = None, observedAuthSchemes = {}, observedSSLHostPorts = {}): #{{{
+    def __init__(self, srctype, origurl, hstspreloadchecker, domain = None, autoExitFilename = None, observedAuthSchemes = {}, observedSSLHostPorts = {}): #{{{
         self.links = []
         self.srctype = srctype
+        self.domain = domain
         self.HSTSPreloadListChecker = hstspreloadchecker
         self.autoExitFilename = autoExitFilename
         self.observedAuthSchemes = observedAuthSchemes
@@ -284,18 +285,23 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
         #logging.info(pprint.pformat(self.observedSSLHostPorts))
 
+        # Can we exit jAEk at this point?
+        # if we are on the same domain and this page has pwfields, then yes
         if len(passwordfields) > 0:
-            data["self"].screenshot("screenshot.png")
-            if self.hasResult() and self.autoExitFilename != None:
-                res = self.getResult()
-                res["observedAuthSchemes"] = self.observedAuthSchemes
-                res["observedSSLHostPorts"] = self.observedSSLHostPorts
-                # these will be bogus when running jAEk because it doesn't reset the arrays on every page
-                res["redirectPageResources"] = None
-                res["links"] = None
-                with open(self.autoExitFilename, 'w') as outfile:
-                    json.dump(res, outfile)
-                sys.exit(0)
+            if not self.urlInDomain(self.url):
+                logging.debug("Found a login page, but not in domain {}: {}".format(self.url, self.domain))
+            else:
+                data["self"].screenshot("screenshot.png")
+                if self.hasResult() and self.autoExitFilename != None:
+                    res = self.getResult()
+                    res["observedAuthSchemes"] = self.observedAuthSchemes
+                    res["observedSSLHostPorts"] = self.observedSSLHostPorts
+                    # these will be bogus when running jAEk because it doesn't reset the arrays on every page
+                    res["redirectPageResources"] = None
+                    res["links"] = None
+                    with open(self.autoExitFilename, 'w') as outfile:
+                        json.dump(res, outfile)
+                    sys.exit(0)
 
         self.resultFlag = True
 #}}}
@@ -373,6 +379,12 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
         return out
 #}}}
+    def urlInDomain(self, url): #{{{
+        urlparts = urlparse(url)
+        hostname = "." + urlparts.netloc.split(":")[0]
+
+        return hostname.endswith("."+self.domain)
+    #}}}
 #}}}
 
 class ScreenshotTaker(BaseAfterClicksHandler): #{{{

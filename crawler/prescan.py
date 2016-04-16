@@ -49,9 +49,9 @@ skipStep5 = True and False
 
 def urlInDomain(url, domain): #{{{
     urlparts = urlparse(url)
-    hostname = urlparts.netloc.split(":")[0]
+    hostname = "."+urlparts.netloc.split(":")[0]
 
-    return hostname.endswith(domain)
+    return hostname.endswith("."+domain)
 #}}}
 def urlInDomainContainsLoginKeyword(urlrec, domain, keywords): #{{{
     # check that a given URL is in the correct domain, and the URL or link text has a login keyword
@@ -123,7 +123,7 @@ def isValidDomain(d): #{{{
     validchars = string.ascii_lowercase + string.digits + "-."
     return all(c in validchars for c in d)
 #}}}
-def visitPage(t, u, retry = 1): #{{{
+def visitPage(t, u, d, retry = 1): #{{{
     d = os.path.dirname(os.path.realpath(__file__))
     tmpinfd = tempfile.NamedTemporaryFile(delete=False)  
     tmpoutfd = tempfile.NamedTemporaryFile(delete=False)  
@@ -131,7 +131,7 @@ def visitPage(t, u, retry = 1): #{{{
     tmpout = tmpoutfd.name
     tmpinfd.close()
     tmpoutfd.close()
-    indata = { "url": u, "type": t }
+    indata = { "url": u, "type": t, "domain": d}
     json.dump(indata, open(tmpin, 'w'))
     json.dump(None, open(tmpout, 'w'))
 
@@ -244,7 +244,7 @@ if __name__ == "__main__":
             visitedURLs.add(u)
 
             logging.debug("### Starting prescan of top url {}/{}".format(counter, len(topURLs)))
-            res = visitPage("TOPURL{} {}".format(counter, topURLpatterns[counter-1]), u)
+            res = visitPage("TOPURL{} {}".format(counter, topURLpatterns[counter-1]), u, currentDomain)
 
             if res:
                 if firstWorkingURL == None:
@@ -288,7 +288,7 @@ if __name__ == "__main__":
             visitedURLs.add(u)
 
             logging.debug("### Starting prescan of possible login url ({}/{}) {}".format(counter, len(sortedURLs), u))
-            res = visitPage("LOGINURL{}".format(counter), u)
+            res = visitPage("LOGINURL{}".format(counter), u, currentDomain)
             if res:
                 logging.debug("Inspecting results for prescan of possible login url {}".format(u))
 
@@ -316,7 +316,7 @@ if __name__ == "__main__":
             visitedURLs.add(u)
 
             logging.debug("### Starting prescan of bing url {}/{}".format(counter, len(bingURLs)))
-            res = visitPage("BINGURL{}".format(counter), u)
+            res = visitPage("BINGURL{}".format(counter), u, currentDomain)
 
             if res:
                 if firstWorkingURL == None:
@@ -355,7 +355,7 @@ if __name__ == "__main__":
                 continue
             visitedURLs.add(u)
             logging.debug("### Starting prescan of possible bing login url ({}/{}) {}".format(counter, len(sortedURLs), u))
-            res = visitPage("BINGLOGINURL{}".format(counter), u)
+            res = visitPage("BINGLOGINURL{}".format(counter), u, currentDomain)
             if res:
                 logging.debug("Inspecting results for prescan of possible bing login url {}".format(u))
 
