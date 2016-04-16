@@ -371,6 +371,7 @@ if __name__ == "__main__":
             logging.debug("#### jAEk succeeded")
 
         # save the data from jAEk if it exists
+        outdata = {}
         try:
             outdata = json.load(open("output-jaek.json"))
             os.unlink("output-jaek.json")
