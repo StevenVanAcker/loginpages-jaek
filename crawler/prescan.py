@@ -184,6 +184,17 @@ def logObservedAuthTypes(res): #{{{
             observedSSLHostPorts[k] += v
 #}}}
 
+def handleValidResult(res): #{{{
+    if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
+        saveDataAndExit("output.json", res)
+        return True
+    else:
+        # if we have no valid result, then any screenshots were mistakingly generated. remove them
+        if os.path.exists("screenshot.png"):
+            os.unlink("screenshot.png")
+        return False
+#}}}
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s: %(levelname)s - %(message)s')
 
@@ -243,10 +254,7 @@ if __name__ == "__main__":
                 logObservedAuthTypes(res)
 
                 # if we found a login page, save data and bail out right now
-                if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                    visitedURLs.add(res["url"])
-                    saveDataAndExit("output.json", res)
-
+                handleValidResult(res)
                 topURLresults.append(res)
                 logging.debug("### Done with prescan of top url {}: {}".format(counter, u))
             else:
@@ -287,10 +295,7 @@ if __name__ == "__main__":
                 logObservedAuthTypes(res)
 
                 # if we found a login page, save data and bail out right now
-                if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                    visitedURLs.add(res["url"])
-                    saveDataAndExit("output.json", res)
-
+                handleValidResult(res)
                 logging.debug("### Done with prescan of possible login url {}".format(u))
             else:
                 logging.debug("### Failed prescan of possible login url {}".format(u))
@@ -321,10 +326,7 @@ if __name__ == "__main__":
                 logObservedAuthTypes(res)
 
                 # if we found a login page, save data and bail out right now
-                if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                    visitedURLs.add(res["url"])
-                    saveDataAndExit("output.json", res)
-
+                handleValidResult(res)
                 bingURLresults.append(res)
                 logging.debug("### Done with prescan of bing url {}: {}".format(counter, u))
             else:
@@ -360,10 +362,7 @@ if __name__ == "__main__":
                 logObservedAuthTypes(res)
 
                 # if we found a login page, save data and bail out right now
-                if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
-                    visitedURLs.add(res["url"])
-                    saveDataAndExit("output.json", res)
-
+                handleValidResult(res)
                 logging.debug("### Done with prescan of possible bing login url {}".format(u))
             else:
                 logging.debug("### Failed prescan of possible bing login url {}".format(u))
