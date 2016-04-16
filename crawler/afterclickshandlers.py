@@ -43,7 +43,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         self.links = []
         self.srctype = srctype
         self.domain = domain
-	self.debug("LoginPageChecker set domain to {}".format(self.domain))
+        self.debug("LoginPageChecker set domain to {}".format(self.domain))
         self.HSTSPreloadListChecker = hstspreloadchecker
         self.autoExitFilename = autoExitFilename
 
@@ -80,7 +80,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             "pre_clicks": [x.toDict() if x != None else None for x in self.preclicks],
             "redirectPageResources": self.redirectPageResources,
             "mainRedirectChain": self.mainRedirectChain,
-	    "success": True
+            "success": True
         }
 #}}}
     def getResourceData(self, url, page): #{{{
@@ -384,7 +384,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             indata[val] = 0
         indata[val] += 1
 
-	logging.debug("Observing '{}' value '{}'".format(t, val))
+        logging.debug("Observing '{}' value '{}'".format(t, val))
 
         with open(fn, "w") as fp:
             json.dump(indata, fp)
