@@ -39,14 +39,12 @@ class BaseAfterClicksHandler(object): #{{{
 
 
 class LoginPageChecker(BaseAfterClicksHandler): #{{{
-    def __init__(self, srctype, origurl, hstspreloadchecker, domain = None, autoExitFilename = None, observedAuthSchemes = {}, observedSSLHostPorts = {}): #{{{
+    def __init__(self, srctype, origurl, hstspreloadchecker, domain = None, autoExitFilename = None): #{{{
         self.links = []
         self.srctype = srctype
         self.domain = domain
         self.HSTSPreloadListChecker = hstspreloadchecker
         self.autoExitFilename = autoExitFilename
-        self.observedAuthSchemes = observedAuthSchemes
-        self.observedSSLHostPorts = observedSSLHostPorts
 
         # toplevel URLs that have no path (e.g. http://test.com)
         # should be converted to end in / (http://test.com/)
@@ -81,8 +79,6 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             "pre_clicks": [x.toDict() if x != None else None for x in self.preclicks],
             "redirectPageResources": self.redirectPageResources,
             "mainRedirectChain": self.mainRedirectChain,
-            "observedAuthSchemes": self.observedAuthSchemes,
-            "observedSSLHostPorts": self.observedSSLHostPorts,
 	    "success": True
         }
 #}}}
@@ -269,21 +265,13 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 authtypes = list(set([v.split(" ")[0].lower() for (k,v) in h.items() if k.lower() == "WWW-Authenticate".lower()]))
                 for a in authtypes:
                     logging.debug("AuthType {} by {}".format(a, r["url"]))
-                    if a not in self.observedAuthSchemes:
-                        self.observedAuthSchemes[a] = 0
-
-                    self.observedAuthSchemes[a] += 1
+                    self.observeStuff("authtypes", a)
 
             if "sslinfo" in r and "url" in r and r["sslinfo"] != None:
                 urlparts = urlparse(r["url"])
                 if urlparts.scheme.lower() == "https":
                     netloc = "{}:{}".format(urlparts.hostname, urlparts.port if urlparts.port != None else 443)
-                    if netloc not in self.observedSSLHostPorts:
-                        self.observedSSLHostPorts[netloc] = 0
-
-                    self.observedSSLHostPorts[netloc] += 1
-
-        #logging.info(pprint.pformat(self.observedSSLHostPorts))
+                    self.observeStuff("sslhostports", netloc)
 
         # Can we exit jAEk at this point?
         # if we are on the same domain and this page has pwfields, then yes
@@ -294,8 +282,6 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
                 data["self"].screenshot("screenshot.png")
                 if self.hasResult() and self.autoExitFilename != None:
                     res = self.getResult()
-                    res["observedAuthSchemes"] = self.observedAuthSchemes
-                    res["observedSSLHostPorts"] = self.observedSSLHostPorts
                     # these will be bogus when running jAEk because it doesn't reset the arrays on every page
                     res["redirectPageResources"] = None
                     res["links"] = None
@@ -384,6 +370,21 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         hostname = "." + urlparts.netloc.split(":")[0]
 
         return hostname.endswith("."+self.domain)
+    #}}}
+    def observeStuff(self, t, val): #{{{
+        indata = {}
+        fn = "{}.json".format(t)
+        try:
+            indata = json.load(open(fn))
+        except:
+            pass
+
+        if val not in indata:
+            indata[val] = 0
+        indata[val] += 1
+
+        with open(fn, "w") as fp:
+            json.dump(indata, fp)
     #}}}
 #}}}
 

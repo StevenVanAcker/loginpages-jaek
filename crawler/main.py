@@ -22,14 +22,10 @@ if __name__ == '__main__':
     if len(sys.argv) == 3:
         url = sys.argv[1]
         domain = sys.argv[2]
-        observedAuthSchemes = {}
-        observedSSLHostPorts = {}
     else:
         indata = json.load(open(sys.argv[1]))
         url = indata["url"]
         domain = indata["domain"]
-        observedAuthSchemes = indata["observedAuthSchemes"]
-        observedSSLHostPorts = indata["observedSSLHostPorts"]
 
     dbname = domain.replace(".", "_")
 
@@ -41,15 +37,13 @@ if __name__ == '__main__':
     logging.info("Crawler started...")
     database_manager = DatabaseManager(user, dropping=True)
     hstspreloadchecker = HSTSPreloadList()
-    xxx = LoginPageChecker("CRAWL", None, hstspreloadchecker, domain = domain, autoExitFilename = "output-jaek.json", observedAuthSchemes=observedAuthSchemes, observedSSLHostPorts=observedSSLHostPorts)
+    xxx = LoginPageChecker("CRAWL", None, hstspreloadchecker, domain = domain, autoExitFilename = "output-jaek.json")
     crawler = Crawler(crawl_config=crawler_config, database_manager=database_manager, afterClicksHandler=xxx)#, proxy="localhost", port=8082)
     crawler.crawl(user)
     logging.info("Crawler finished")
 
     if xxx.hasResult():
         res = xxx.getResult()
-        res["observedAuthSchemes"] = xxx.observedAuthSchemes
-        res["observedSSLHostPorts"] = xxx.observedSSLHostPorts
         # these will be bogus when running jAEk because it doesn't reset the arrays on every page
         res["redirectPageResources"] = None
         res["links"] = None

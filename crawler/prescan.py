@@ -107,8 +107,6 @@ def urlPrioritySort(a, b): #{{{
     return 0
 #}}}
 def saveDataAndExit(fn, data): #{{{
-    data["observedAuthSchemes"] = observedAuthSchemes
-    data["observedSSLHostPorts"] = observedSSLHostPorts
     if "success" not in data:
         data["success"] = False
     if data["success"]:
@@ -171,18 +169,6 @@ def bingdataFor(domain): #{{{
     except:
         return []
 #}}}
-def logObservedAuthTypes(res): #{{{
-    if "observedAuthSchemes" in res:
-        for (k,v) in res["observedAuthSchemes"].items():
-            if k not in observedAuthSchemes:
-                observedAuthSchemes[k] = 0
-            observedAuthSchemes[k] += v
-    if "observedSSLHostPorts" in res:
-        for (k,v) in res["observedSSLHostPorts"].items():
-            if k not in observedSSLHostPorts:
-                observedSSLHostPorts[k] = 0
-            observedSSLHostPorts[k] += v
-#}}}
 
 def handleValidResult(res): #{{{
     if "url" in res and "pwfields" in res and urlInDomain(res["url"], currentDomain) and len(res["pwfields"]) > 0:
@@ -225,8 +211,6 @@ if __name__ == "__main__":
     hstspreloadchecker = HSTSPreloadList()
 
     firstWorkingURL = None
-    observedAuthSchemes = {}
-    observedSSLHostPorts = {}
     visitedURLs = set()
 
     #### Step 1: for each toplevel URL of this domain, check if it contains a login page {{{
@@ -250,8 +234,6 @@ if __name__ == "__main__":
                 if firstWorkingURL == None:
                     firstWorkingURL = u
                 logging.debug("Inspecting results for prescan of top url {}: {}".format(counter, u))
-
-                logObservedAuthTypes(res)
 
                 # if we found a login page, save data and bail out right now
                 handleValidResult(res)
@@ -292,8 +274,6 @@ if __name__ == "__main__":
             if res:
                 logging.debug("Inspecting results for prescan of possible login url {}".format(u))
 
-                logObservedAuthTypes(res)
-
                 # if we found a login page, save data and bail out right now
                 handleValidResult(res)
                 logging.debug("### Done with prescan of possible login url {}".format(u))
@@ -322,8 +302,6 @@ if __name__ == "__main__":
                 if firstWorkingURL == None:
                     firstWorkingURL = u
                 logging.debug("Inspecting results for prescan of bing url {}: {}".format(counter, u))
-
-                logObservedAuthTypes(res)
 
                 # if we found a login page, save data and bail out right now
                 handleValidResult(res)
@@ -359,8 +337,6 @@ if __name__ == "__main__":
             if res:
                 logging.debug("Inspecting results for prescan of possible bing login url {}".format(u))
 
-                logObservedAuthTypes(res)
-
                 # if we found a login page, save data and bail out right now
                 handleValidResult(res)
                 logging.debug("### Done with prescan of possible bing login url {}".format(u))
@@ -378,7 +354,7 @@ if __name__ == "__main__":
         tmpinfd = tempfile.NamedTemporaryFile(delete=False)  
         tmpin = tmpinfd.name
         tmpinfd.close()
-        indata = { "url": firstWorkingURL, "domain": currentDomain, "observedAuthSchemes": observedAuthSchemes, "observedSSLHostPorts": observedSSLHostPorts }
+        indata = { "url": firstWorkingURL, "domain": currentDomain }
         json.dump(indata, open(tmpin, 'w'))
 
         if os.path.exists("output-jaek.json"):
