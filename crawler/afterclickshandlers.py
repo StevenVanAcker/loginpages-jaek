@@ -43,6 +43,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         self.links = []
         self.srctype = srctype
         self.domain = domain
+	self.debug("LoginPageChecker set domain to {}".format(self.domain))
         self.HSTSPreloadListChecker = hstspreloadchecker
         self.autoExitFilename = autoExitFilename
 
@@ -382,6 +383,8 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         if val not in indata:
             indata[val] = 0
         indata[val] += 1
+
+	logging.debug("Observing '{}' value '{}'".format(t, val))
 
         with open(fn, "w") as fp:
             json.dump(indata, fp)

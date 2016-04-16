@@ -14,7 +14,6 @@ from utils.config import CrawlConfig
 from crawler import Crawler
 from database.databasemanager import DatabaseManager
 
-from afterclickshandlers import LoginPageChecker
 from replay import Replayer
 from HSTSPreloadList import HSTSPreloadList
 
