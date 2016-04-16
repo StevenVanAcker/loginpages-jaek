@@ -153,7 +153,7 @@ def visitPage(t, u, d, retry = 1): #{{{
             logging.debug("*********************************************")
             logging.debug("****** CRASH DETECTED (TRYING {} MORE) ******".format(retry))
             logging.debug("*********************************************")
-            data = visitPage(t, u, retry - 1)
+            data = visitPage(t, u, d, retry - 1)
         else:
             logging.debug("*********************************************")
             logging.debug("***** CRASH DETECTED (NOT TRYING AGAIN) *****")

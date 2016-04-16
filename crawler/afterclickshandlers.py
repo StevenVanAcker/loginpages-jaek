@@ -43,7 +43,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         self.links = []
         self.srctype = srctype
         self.domain = domain
-        self.debug("LoginPageChecker set domain to {}".format(self.domain))
+        logging.debug("LoginPageChecker set domain to {}".format(self.domain))
         self.HSTSPreloadListChecker = hstspreloadchecker
         self.autoExitFilename = autoExitFilename
 
