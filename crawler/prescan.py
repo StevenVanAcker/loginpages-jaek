@@ -190,7 +190,7 @@ if __name__ == "__main__":
         currentDomain = indata["domain"].lower()
 
     with open("output.json", "w") as fp:
-        json.dump({"success": False}, fp)
+        json.dump({"success": False, "domain": currentDomain}, fp)
 
     if not isValidDomain(currentDomain):
         logging.info("Invalid domain name {}".format(currentDomain))
@@ -371,7 +371,7 @@ if __name__ == "__main__":
             logging.debug("#### jAEk succeeded")
 
         # save the data from jAEk if it exists
-        outdata = {}
+        outdata = {"domain": currentDomain}
         try:
             outdata = json.load(open("output-jaek.json"))
             os.unlink("output-jaek.json")

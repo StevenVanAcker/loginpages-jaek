@@ -71,6 +71,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 #}}}
     def getResult(self): #{{{
         return {
+            "domain": self.domain,
             "links": self.links,
             "srctype": self.srctype,
             "pwfields": self.pwFields,
