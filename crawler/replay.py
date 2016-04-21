@@ -29,8 +29,8 @@ class Replayer(JaekCore):
 
         self.requestor = MyRequestor(self, proxy, port, afterClicksHandler=self._afterClicksHandler)
 
-    def replay(self, url, click=None, preclicks=[], timeout=60):
-        pagehtml, newurl = self.requestor.get(QUrl(url), delay=20, timeout=timeout)
+    def replay(self, url, click=None, preclicks=[], timeout=60, delay=20):
+        pagehtml, newurl = self.requestor.get(QUrl(url), delay=delay, timeout=timeout)
 
         self._event_executor.stopLogging()
         self._event_executor.setLoggedNetworkData(self.requestor.getLoggedNetworkData())
