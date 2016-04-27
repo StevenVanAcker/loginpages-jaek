@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os, json, logging
+import sys, os, json
 if sys.version_info >= (3, 0):
     from urllib.request import urlretrieve
     from urllib.parse import urlparse
@@ -8,7 +8,7 @@ else:
     from urllib import urlretrieve
     from urlparse import urlparse
 
-class HSTSPreloadList(object):
+class HPKPPreloadList(object):
     def __init__(self, jsonfile=None, url=None, downloadIfNeeded=True): #{{{
         self.data = None
         self.jsonfile = jsonfile
@@ -45,8 +45,10 @@ class HSTSPreloadList(object):
             out = {}
             for r in self.data["entries"]:
                 name = r["name"].lower()
-                subs = r["include_subdomains"] if "include_subdomains" in r else False
-                out[name] = subs
+                hstssubs = r["include_subdomains"] if "include_subdomains" in r else False
+                hpkpsubs = r["include_subdomains_for_pinning"] if "include_subdomains_for_pinning" in r else False
+                if "pins" in r:
+                    out[name] = hstssubs or hpkpsubs
             self.data = out
     #}}}
     def clear(self): #{{{
@@ -102,6 +104,6 @@ class HSTSPreloadList(object):
 
 if __name__ == "__main__":
     import sys, pprint
-    h = HSTSPreloadList(jsonfile="FIXME")
+    h = HPKPPreloadList(jsonfile="FIXME")
     url = sys.argv[1]
-    print("Is URL {} in HSTS preload list? {}".format(url, h.urlInList(url)))
+    print("Is URL {} in HPKP preload list? {}".format(url, h.urlInList(url)))
