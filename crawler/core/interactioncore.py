@@ -177,6 +177,8 @@ class InteractionCore(QWebPage):
 
     def javaScriptAlert(self, frame, msg):
         logging.info("[ALERT] {}".format(msg))
+        if self.afterClicksHandler and msg.startswith(("INJECTEDHTML", "INJECTEDJAVASCRIPT", "INJECTEDFLASH")):
+            self.afterClicksHandler.handleAlert(msg)
         pass
 
     def javaScriptConfirm(self, frame, msg):

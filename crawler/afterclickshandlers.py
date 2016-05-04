@@ -1,12 +1,21 @@
 #!/usr/bin/python
 
-import logging, sys, json, pprint
+import logging, sys, json, pprint, base64
 from time import sleep
 from urllib.parse import urljoin, urlparse, ParseResult
 
 from models.clickable import Clickable
 from core.eventexecutor import EventResult
 from HSTSPreloadList import HSTSPreloadList
+
+
+class hashabledict(dict):
+  def __key(self):
+    return tuple((k,self[k]) for k in sorted(self))
+  def __hash__(self):
+    return hash(self.__key())
+  def __eq__(self, other):
+    return self.__key() == other.__key()
 
 class BaseAfterClicksHandler(object): #{{{
     def handle(self, data, errorcode):
@@ -41,6 +50,7 @@ class BaseAfterClicksHandler(object): #{{{
 class LoginPageChecker(BaseAfterClicksHandler): #{{{
     def __init__(self, srctype, origurl, hstspreloadchecker, domain = None, autoExitFilename = None): #{{{
         self.links = []
+        self.alerts = set()
         self.srctype = srctype
         self.domain = domain
         logging.debug("LoginPageChecker set domain to {}".format(self.domain))
@@ -73,6 +83,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         return {
             "domain": self.domain,
             "links": self.links,
+            "alerts": list(self.alerts),
             "srctype": self.srctype,
             "pwfields": self.pwFields,
             "url": self.url,
@@ -224,6 +235,8 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
         self.preclicks = data["pre_clicks"]
         self.url = data["webpage"].url
 
+        #data["self"].screenshot("debugscreenshot.png")
+
         base = data["self"].mainFrame().baseUrl().toString()
         for x in data["self"].mainFrame().findAllElements('a'):
             href = x.attribute("href", None)
@@ -231,7 +244,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             if href != None:
                 self.links.append( (urljoin(base, href), txt) )
 
-        passwordfields = data["self"].mainFrame().findAllElements('input[type="password"]')
+        passwordfields = data["self"].mainFrame().findAllElements('input[@type="password"]')
         self.pwFields = {}
         for pwf in passwordfields:
             xpath = pwf.evaluateJavaScript("getXPath(this)")
@@ -281,7 +294,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             if not self.urlInDomain(self.url):
                 logging.debug("Found a login page, but not in domain {}: {}".format(self.url, self.domain))
             else:
-                data["self"].screenshot("screenshot.png")
+                #data["self"].screenshot("screenshot.png")
                 if self.hasResult() and self.autoExitFilename != None:
                     res = self.getResult()
                     # these will be bogus when running jAEk because it doesn't reset the arrays on every page
@@ -389,6 +402,15 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
         with open(fn, "w") as fp:
             json.dump(indata, fp)
+    #}}}
+    def handleAlert(self, msg): #{{{
+        #logging.info("LoginPageChecker got ALERT: {}".format(msg))
+        try:
+            data = json.loads(base64.b64decode(msg.split(" ")[1]).decode())
+            self.alerts.add(hashabledict(data))
+            #logging.debug(pprint.pformat(self.alerts))
+        except Exception as e:
+            logging.debug("Could not parse alert {}".format(e))
     #}}}
 #}}}
 
