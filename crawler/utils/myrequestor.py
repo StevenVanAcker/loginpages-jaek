@@ -38,6 +38,8 @@ class MyRequestor(InteractionCore):
         # when this triggers, we know the page loaded successfully, just return stuff
         newurl = self.mainFrame().url().toString()
         parsed_html = self.mainFrame().toHtml()
+        if self.afterClicksHandler:
+            self.afterClicksHandler.justFindPWFields({"self": self})
         self.mainFrame().setHtml(None)
         self.resultToReturn = (parsed_html, newurl)
 

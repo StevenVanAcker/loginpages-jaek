@@ -230,6 +230,35 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
         return outdata
 #}}}
+    def justFindPWFields(self, data): #{{{
+        passwordfields = data["self"].mainFrame().evaluateJavaScript("jaek_getPWFields()")
+
+        if passwordfields:
+            for rec in passwordfields:
+                if rec["formTarget"]:
+                    rec["formTarget"] = urljoin(rec["frame"], rec["formTarget"])
+                else:
+                    rec["formTarget"] = None
+            self.pwFields = passwordfields
+
+###         print(pprint.pformat(mydata))
+###         passwordfields = data["self"].mainFrame().findAllElements('input[@type="password"]')
+###         self.pwFields = {}
+###         for pwf in passwordfields:
+###             xpath = pwf.evaluateJavaScript("getXPath(this)")
+###             isvis = pwf.evaluateJavaScript("jaek_isVisible(this)")
+###             formtarget = pwf.evaluateJavaScript("jaek_FormTargetFromPW(this)")
+###             taintedcss = pwf.evaluateJavaScript("jaek_hastaintedCSS(this)")
+###             if formtarget:
+###                 formtarget = urljoin(base, formtarget)
+###             else:
+###                 formtarget = None
+###             self.pwFields[xpath] = {
+###                 "isVisible": isvis,
+###                 "formTarget": formtarget,
+###                 "taintedCSS": taintedcss
+###             }
+    #}}}
     def handle(self, data, errorcode): #{{{
         self.initclick = data["element_to_click"]
         self.preclicks = data["pre_clicks"]
@@ -244,22 +273,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
             if href != None:
                 self.links.append( (urljoin(base, href), txt) )
 
-        passwordfields = data["self"].mainFrame().findAllElements('input[@type="password"]')
-        self.pwFields = {}
-        for pwf in passwordfields:
-            xpath = pwf.evaluateJavaScript("getXPath(this)")
-            isvis = pwf.evaluateJavaScript("jaek_isVisible(this)")
-            formtarget = pwf.evaluateJavaScript("jaek_FormTargetFromPW(this)")
-            taintedcss = pwf.evaluateJavaScript("jaek_hastaintedCSS(this)")
-            if formtarget:
-                formtarget = urljoin(base, formtarget)
-            else:
-                formtarget = None
-            self.pwFields[xpath] = {
-                "isVisible": isvis,
-                "formTarget": formtarget,
-                "taintedCSS": taintedcss
-            }
+        self.justFindPWFields(data)
         logging.debug("Logging something so that jAEK doesn't crap out...")
 
         ####################
@@ -290,7 +304,7 @@ class LoginPageChecker(BaseAfterClicksHandler): #{{{
 
         # Can we exit jAEk at this point?
         # if we are on the same domain and this page has pwfields, then yes
-        if len(passwordfields) > 0:
+        if len(self.pwFields) > 0:
             if not self.urlInDomain(self.url):
                 logging.debug("Found a login page, but not in domain {}: {}".format(self.url, self.domain))
             else:

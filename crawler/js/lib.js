@@ -381,3 +381,39 @@ function jaek_hastaintedCSS(el){
     return (css.indexOf("59723") >= 0) || (css.indexOf("rgb(153, 217, 145)") >= 0);
 };
 
+function jaek_getPWFields() {
+    var gettop = function(e) { 
+        try { 
+              if(e != null && e.parent != e) { return gettop(e.parent) } 
+              else { return e; }
+            }
+        finally{}
+    } 
+    var getpassfields = function(w) { 
+        var out = [];
+        try { 
+            if(!(w && w.document)) { 
+                return [];
+            }; 
+            var pl = w.document.getElementsByTagName('input'); 
+            for(var i = 0; i < pl.length; i++) { 
+                var p = pl[i]; 
+                if(p && p.getAttribute('type')=='password') {
+                    out.push({
+                        "xpath": getXPath(p),
+                        "frame": w.location.href,
+                        "isVisible": jaek_isVisible(p),
+                        "formTarget": jaek_FormTargetFromPW(p),
+                        "taintedCSS": jaek_hastaintedCSS(p),
+                    });
+                }
+            }; 
+            for(var i = 0; i < w.frames.length; i++) { 
+                var x = getpassfields(w.frames[i]); 
+                out.push.apply(out, x);
+            }
+        } finally {};
+        return out;
+    }; 
+    return getpassfields(gettop(window)); 
+}
