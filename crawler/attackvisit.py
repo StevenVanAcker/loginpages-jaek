@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     xxx = LoginPageChecker("TEST", url, hstspreloadchecker, domain = domain)
     rep = Replayer(proxy="localhost", port=port, afterClicksHandler=xxx)
-    errorcode, html = rep.replay(url, initclick, preclicks, timeout=10, delay=5)
+    errorcode, html = rep.replay(url, initclick, preclicks, timeout=60, delay=15)
 
 
     if xxx.hasResult():
